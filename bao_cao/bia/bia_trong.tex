@@ -1,0 +1,52 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+
+\begin{titlepage}
+
+\begin{tikzpicture}[remember picture,overlay]
+    \draw [line width=1pt]
+    ($ (current page.north west) + (3cm,-2.5cm) $)
+    rectangle
+    ($ (current page.south east) + (-1.5cm,2.5cm) $);
+\draw [line width=3pt]
+    ($ (current page.north west) + (3.15cm,-2.65cm) $)
+    rectangle
+    ($ (current page.south east) + (-1.65cm,2.65cm) $);
+\end{tikzpicture}
+
+\begin{center}
+
+\begin{spacing}{1}
+\textbf{TRƯỜNG ĐẠI HỌC CÔNG NGHỆ THÔNG TIN VÀ TRUYỀN THÔNG} \\
+\textbf{KHOA CÔNG NGHỆ THÔNG TIN\\[1.5cm]}
+\end{spacing}
+
+\includegraphics[scale=0.04]{tai_nguyen/logo_ictu.jpg}\\[1cm]
+
+\begin{large}
+\begin{spacing}{1}
+\textbf{BÁO CÁO BÀI TẬP LỚN} \\[0.2cm]
+\textbf{HỌC PHẦN: HỌC MÁY} \\[1.6cm]
+\end{spacing}
+\end{large}
+
+\textbf{ĐỀ TÀI:} \\[0.3cm]
+\parbox{0.82\textwidth}{\centering\setstretch{1.2}\textbf{\Large DỰ BÁO ĐIỆN NĂNG TIÊU THỤ CỦA HỘ GIA ĐÌNH DỰA TRÊN DỮ LIỆU ĐO THEO THỜI GIAN}}
+\vspace{1.8cm}
+
+\begin{tabular}{ r l }
+\textbf{Giảng viên hướng dẫn:} & \textbf{\gvhd} \\
+\textbf{Sinh viên thực hiện:} & \textbf{\tvmot{} -- \mssvmot} \\
+ & \textbf{\tvhai{} -- \mssvhai} \\
+\textbf{Lớp:} & \textbf{\lop} \\
+\end{tabular}
+\\[2.8cm]
+
+\textbf{Thái Nguyên, tháng 10 năm 2026}
+
+\end{center}
+
+\end{titlepage}
+
+\end{document}

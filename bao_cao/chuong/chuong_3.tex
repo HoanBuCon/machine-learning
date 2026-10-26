@@ -1,0 +1,354 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+
+\section{Định lượng các vấn đề chất lượng dữ liệu}
+\label{sec:van-de}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{3cm}|>{\raggedright\arraybackslash}p{3.5cm}|>{\raggedright\arraybackslash}p{4.1cm}|>{\raggedright\arraybackslash}p{3.5cm}|}
+\caption{Bảng vấn đề chất lượng dữ liệu}
+\label{tab:van-de}\\
+\hline
+\textbf{Vấn đề} & \textbf{Định lượng} & \textbf{Chi tiết} & \textbf{Ảnh hưởng} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Vấn đề} & \textbf{Định lượng} & \textbf{Chi tiết} & \textbf{Ảnh hưởng} \\
+\hline
+\endhead
+1. Sai định dạng (ký tự ``?'') & 155.874 ký tự ``?'' trong tệp gốc & Có ở 6 cột số; \code{Sub_metering_3} để trống ô & 6 cột bị đọc thành chuỗi, không tính toán được \\
+\hline
+2. Trùng mốc thời gian & 0 bản ghi trùng & Kiểm tra bằng \code{index.duplicated()} & Không có \\
+\hline
+3. Mốc thời gian bị thiếu & 0 mốc & So với lưới đều 1 phút từ đầu đến cuối chuỗi & Lưới thời gian liên tục \\
+\hline
+4. Giá trị thiếu & 25.979 dòng (1,252\%) & Cả 25.979 dòng đều thiếu đồng thời 7 biến (0 dòng thiếu một phần) & Mất thông tin ở các khoảng thiếu \\
+\hline
+5. Thiếu dạng khối & 71 khối; 6 khối dài hơn 1 ngày chiếm 94,9\% số phút thiếu & Khối dài nhất 120,4 giờ từ 17/08/2010; 4 trong 6 khối dài thuộc năm 2010 & Không phù hợp nội suy; tập kiểm thử bị ảnh hưởng nhiều hơn \\
+\hline
+6. Ngoại lai (1,5$\cdot$IQR) & GAP: 94.907 phút (4,63\%) & SM1: 8,25\%; SM3: 0\% (dải hẹp, Q3 = 17) & Là các giờ tiêu thụ cao (xem Mục~\ref{sec:xu-ly}) \\
+\hline
+7. Tính hợp lý vật lý & 0 giá trị âm; 57 phút điện áp $>$ 253 V (0,003\%) & 253 V = 230 V + 10\%, giới hạn trên của EN 50160~\cite{en50160} & Không thấy giá trị phi vật lý \\
+\hline
+8. Nhất quán đơn vị & 0,05\% số phút có điện năng ``còn lại'' âm (nhỏ nhất $-2{,}4$ Wh/phút) & Còn lại = GAP$\times$1000/60 $-$ (SM1+SM2+SM3), công thức theo UCI~\cite{hebrail2006uci} & Rất nhỏ; có thể do làm tròn của các công tơ \\
+\hline
+9. Nguy cơ rò rỉ & $r(\text{GAP}, V\cdot I/1000) = 0{,}99909$ & \code{Global_intensity} đo cùng lúc với nhãn & Loại khỏi đầu vào \\
+\hline
+10. Mất cân bằng & 2,26\% số giờ huấn luyện vượt râu trên 3,494 kWh & Hồi quy, không có lớp; nhãn hai đỉnh, tháng 8 thấp bất thường & Theo dõi sai số theo dải giá trị và theo tháng \\
+\hline
+\end{longtable}
+
+Ghi chú cho dòng 7: chuẩn EN 50160 quy định điện áp hạ thế nằm trong $\pm 10\%$ điện áp danh định cho 95\% giá trị trung bình 10 phút mỗi tuần; nhóm chỉ dùng mức 253 V làm ngưỡng tham khảo để phát hiện giá trị bất thường, không dùng để đánh giá chất lượng lưới. Nội dung chuẩn được nhóm xác minh qua nguồn thứ cấp, chưa đọc văn bản gốc.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{hinh/hinh-01-c22.pdf}
+\caption{Tỷ lệ phút thiếu dữ liệu theo ngày}
+\label{fig:thieu}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Sáu khối thiếu dữ liệu dài hơn một ngày}
+\label{tab:khoi-thieu}
+\begin{tabular}{|c|l|r|r|}
+\hline
+\textbf{STT} & \textbf{Bắt đầu} & \textbf{Số phút} & \textbf{Số giờ} \\
+\hline
+1 & 17/08/2010 21:02 & 7.226 & 120,4 \\
+2 & 25/09/2010 03:56 & 5.237 & 87,3 \\
+3 & 28/04/2007 00:21 & 3.723 & 62,0 \\
+4 & 13/06/2009 00:30 & 3.305 & 55,1 \\
+5 & 12/01/2010 14:53 & 3.129 & 52,2 \\
+6 & 20/03/2010 03:52 & 2.027 & 33,8 \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Nhận xét Hình~\ref{fig:thieu} và Bảng~\ref{tab:khoi-thieu}.} Dữ liệu thiếu không rải rác từng phút mà tập trung thành 71 khối liên tục; chỉ 6 khối dài hơn một ngày đã chiếm 94,9\% số phút thiếu. Mô hình thiếu này không phù hợp với giả định thiếu rải rác, hoàn toàn ngẫu nhiên~\cite{little2019statistical}; nguyên nhân có thể là thiết bị ghi bị ngắt, nhưng dữ liệu không cho biết. Bốn khối dài rơi vào năm 2010, tức thuộc tập kiểm thử: khi đánh giá mô hình cần nêu rõ số giờ kiểm thử bị loại.
+
+\section{Phương án xử lý từng vấn đề}
+\label{sec:xu-ly}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{2.7cm}|>{\raggedright\arraybackslash}p{4.3cm}|>{\raggedright\arraybackslash}p{7.5cm}|}
+\caption{Quyết định xử lý và lý do}
+\label{tab:xu-ly}\\
+\hline
+\textbf{Vấn đề} & \textbf{Xử lý} & \textbf{Lý do, phương án đã cân nhắc} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Vấn đề} & \textbf{Xử lý} & \textbf{Lý do, phương án đã cân nhắc} \\
+\hline
+\endhead
+Ký tự ``?'' & \code{read_csv} với \code{na_values} gồm ``?'' và ô trống; ép \code{float64} & ``?'' là ký hiệu thiếu theo quy ước của nguồn. Không thay bằng 0 vì hộ luôn có tải nền (min 0,076 kW): thay bằng 0 sẽ tạo giá trị sai. \\
+\hline
+Thiếu ở nhãn & Tổng hợp theo giờ, giờ có $< 54$ phút đo gán NaN; \textbf{không nội suy}, không xóa dòng & Nội suy qua khối thiếu dài tới 5 ngày sẽ dùng dữ liệu sau khối để tạo nhãn giả, vừa là rò rỉ vừa làm phẳng biến động thật. Giữ NaN trên lưới để \code{shift(k)} luôn đúng $k$ giờ; xóa dòng sẽ làm sai các đặc trưng trễ. Mẫu có nhãn NaN bị bỏ khi huấn luyện và đánh giá. \\
+\hline
+Thiếu ở đặc trưng & \code{SimpleImputer} (trung vị) trong \code{Pipeline}, chỉ \code{fit} trên tập huấn luyện & Trung vị ít bị kéo bởi các giờ đỉnh hơn trung bình khi phân bố lệch phải (trung vị 0,794 so với trung bình 1,100 kWh). Phương pháp điền là tham số, có thể đổi (Mục~\ref{sec:tham-so}). \\
+\hline
+Ngoại lai & \textbf{Giữ nguyên}, không cắt hoặc winsorize & Không có giá trị âm hay vượt ngưỡng vật lý; các điểm vượt râu là giờ tiêu thụ cao có thật, đúng là đối tượng cần dự báo. Cắt bỏ sẽ làm sai tổng điện năng và che giấu sai số giờ cao điểm. Chọn MAE làm chỉ số chính để giảm ảnh hưởng của chúng. \\
+\hline
+Rò rỉ & Loại \code{Global_intensity} và \code{Voltage} cùng thời điểm & Không biết được tại thời điểm dự báo $t$. \\
+\hline
+Mất cân bằng & Không dùng oversampling hay SMOTE & Sinh mẫu nhân tạo phá vỡ cấu trúc thời gian; thay vào đó phân tích sai số theo khung giờ, theo tháng và theo dải giá trị. \\
+\hline
+\end{longtable}
+
+\section{Chọn ngưỡng số phút hợp lệ trong một giờ}
+\label{sec:nguong}
+
+\begin{table}[H]
+\centering
+\caption{Số giờ hợp lệ theo ngưỡng số phút có đo}
+\label{tab:nguong}
+\begin{tabular}{|c|r|r|r|}
+\hline
+\textbf{Ngưỡng (phút)} & \textbf{Số giờ hợp lệ} & \textbf{Tỷ lệ (\%)} & \textbf{Số giờ NaN} \\
+\hline
+60 & 34.085 & 98,54 & 504 \\
+\textbf{54} & \textbf{34.143} & \textbf{98,71} & \textbf{446} \\
+30 & 34.157 & 98,75 & 432 \\
+1 & 34.168 & 98,78 & 421 \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Nhận xét.} Đổi ngưỡng từ 60 xuống 1 phút chỉ thay đổi 83 giờ (0,24\%), vì phần lớn giờ thiếu là thiếu trọn vẹn: 421 giờ không có phút nào. Ngưỡng 54 phút cho phép thiếu tối đa 10\% (6 phút) trong một giờ: giữ thêm 58 giờ so với ngưỡng 60 mà vẫn bảo đảm trung bình được tính trên ít nhất 90\% thời gian của giờ. Kết quả gần như không phụ thuộc vào lựa chọn ngưỡng, nên đây không phải quyết định nhạy cảm.
+
+\section{So sánh trước -- sau xử lý}
+\label{sec:truoc-sau}
+
+\begin{table}[H]
+\centering
+\caption{So sánh trước (công suất theo phút) và sau (điện năng theo giờ)}
+\label{tab:truoc-sau}
+\small
+\begin{tabular}{|l|r|r|}
+\hline
+\textbf{Chỉ số} & \textbf{Trước: GAP theo phút (kW)} & \textbf{Sau: \code{energy_kwh} theo giờ (kWh)} \\
+\hline
+Số dòng & 2.075.259 & 34.589 \\
+Số dòng thiếu & 25.979 & 446 \\
+Tỷ lệ thiếu & 1,252\% & 1,289\% \\
+Trung bình & 1,092 & 1,092 \\
+Độ lệch chuẩn & 1,057 & 0,898 \\
+Trung vị & 0,602 & 0,803 \\
+Min / Max & 0,076 / 11,122 & 0,124 / 6,561 \\
+Skew & 1,79 & 1,30 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{hinh/hinh-01-c33.pdf}
+\caption{Phân bố trước -- sau (trái) và đoạn chứa khối thiếu dài nhất, tháng 8/2010 (phải)}
+\label{fig:truoc-sau}
+\end{figure}
+
+\textbf{Nhận xét Bảng~\ref{tab:truoc-sau} và Hình~\ref{fig:truoc-sau}.}
+\begin{enumerate}[1.]
+    \item \textbf{Bảo toàn điện năng:} trung bình giữ nguyên 1,092, đúng như kỳ vọng vì trung bình của công suất (kW) trong một giờ bằng điện năng của giờ đó (kWh).
+    \item \textbf{Làm trơn:} độ lệch chuẩn giảm 15\% (1,057 $\rightarrow$ 0,898), giá trị lớn nhất giảm từ 11,122 xuống 6,561 và skew giảm từ 1,79 xuống 1,30, do các đỉnh kéo dài vài phút bị trung bình hóa trong giờ. Trung vị tăng (0,602 $\rightarrow$ 0,803) vì mỗi giờ thường có lẫn phút tải nền và phút tải cao.
+    \item \textbf{Tỷ lệ thiếu} tăng nhẹ 1,252\% $\rightarrow$ 1,289\% do các giờ thiếu 7 phút trở lên bị gán NaN có chủ đích.
+    \item \textbf{Khối thiếu được giữ nguyên} (Hình~\ref{fig:truoc-sau}, phải): đường theo giờ đứt đoạn từ 17/08 đến 22/08/2010 thay vì bị nối bằng một đoạn thẳng giả.
+\end{enumerate}
+Ghi chú: hình phải dùng đúng đoạn mã của ô [33] trong notebook 01, chỉ đổi định dạng nhãn trục thời gian sang ngày/tháng để các nhãn không chồng lên nhau.
+
+\section{Bảng dữ liệu có giám sát}
+\label{sec:giam-sat}
+Từ chuỗi \code{energy_kwh}, notebook 02 (ô [6]) tạo bảng có giám sát theo Bảng~\ref{tab:phat-bieu}: \code{lag_k = energy.shift(k)}, \code{target = energy.shift(-H)}, \code{hour} lấy từ \code{target_time = t + H}. Bảng có 34.589 dòng (toàn bộ lưới giờ), trong đó 34.143 dòng có nhãn. Các dòng đầu chuỗi có đặc trưng trễ NaN vì chưa đủ lịch sử; chúng được giữ lại và điền khuyết trong \code{Pipeline}.
+
+\section{Đặc trưng cửa sổ trượt}
+\label{sec:truot}
+Notebook 02 (ô [21]) xây dựng bốn đặc trưng cửa sổ trượt trên chuỗi \code{energy_kwh}: trung bình của 3, 24, 168 giờ gần nhất (\code{roll_mean_3}, \code{roll_mean_24}, \code{roll_mean_168}) và độ lệch chuẩn của 24 giờ gần nhất (\code{roll_std_24}). Cửa sổ luôn \textbf{kết thúc tại thời điểm gốc} $t$ (mặc định của \code{rolling} trong pandas) và cần ít nhất 75\% số giờ có giá trị, nếu không thì là NaN và được điền khuyết trong \code{Pipeline} như các đặc trưng trễ. Notebook kiểm tra trực tiếp tính nhân quả: \code{roll_mean_3} tại $t$ bằng đúng trung bình của $y_{t-2}, y_{t-1}, y_t$.
+
+\begin{table}[H]
+\centering
+\caption{Tương quan Spearman của đặc trưng cửa sổ trượt với nhãn, $h = 1$, tập huấn luyện}
+\label{tab:truot}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Đặc trưng} & \textbf{Spearman} & \textbf{Số NaN} \\
+\hline
+\code{roll_mean_3} & 0,607 & 16 \\
+\code{roll_mean_24} & 0,386 & 72 \\
+\code{roll_mean_168} & 0,361 & 378 \\
+\code{roll_std_24} & 0,322 & 72 \\
+\hline
+\code{lag_0} (đối chiếu) & 0,764 & -- \\
+TB 24 giờ \textbf{căn giữa} (sai, đối chứng) & 0,488 & -- \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Nhận xét.} Ở $h=1$, giá trị giờ gần nhất (\code{lag_0}, 0,764) vẫn mạnh hơn mọi đặc trưng cửa sổ trượt; các trung bình 24 và 168 giờ mô tả mức nền gần đây, còn \code{roll_std_24} mô tả độ biến động. Vai trò của chúng dự kiến tăng ở tầm dự báo xa, khi \code{lag_0} mất dần tác dụng (Mục~\ref{sec:tuong-quan}). Cửa sổ \textit{căn giữa} (\code{center=True}) chứa 12 giờ sau $t$, gồm cả nhãn $y_{t+1}$, nên có tương quan 0,488, cao hơn rõ so với cửa sổ đúng (0,386): đây là ví dụ định lượng về rò rỉ qua đặc trưng. Ở bản này, các đặc trưng cửa sổ trượt mới được xây dựng và kiểm tra; chúng sẽ được đưa vào bộ đặc trưng khi xây dựng mô hình, nên các bảng tham số tiền xử lý ở Mục~\ref{sec:pipeline} vẫn dùng 6 đặc trưng ban đầu.
+
+\section{Chia tập huấn luyện và kiểm thử theo thời gian}
+Tập được chia theo \textbf{thời điểm mục tiêu}: mẫu có \code{target_time} trước 01/01/2010 thuộc tập huấn luyện, từ 01/01/2010 trở đi thuộc tập kiểm thử; không xáo trộn. Chia theo thời điểm mục tiêu (thay vì thời điểm gốc $t$) bảo đảm không có nhãn nào của năm 2010 lọt vào tập huấn luyện, kể cả khi $h = 24$.
+
+\begin{table}[H]
+\centering
+\caption{Kích thước các tập với $h = 1$}
+\label{tab:kich-thuoc}
+\begin{tabular}{|l|r|l|r|}
+\hline
+\textbf{Tập} & \textbf{Số mẫu có nhãn} & \textbf{Thời điểm mục tiêu} & \textbf{Tỷ lệ} \\
+\hline
+Huấn luyện & 26.523 & 16/12/2006 18:00 -- 31/12/2009 23:00 & 77,7\% \\
+Kiểm thử & 7.620 & 01/01/2010 00:00 -- 26/11/2010 20:00 & 22,3\% \\
+\hline
+\end{tabular}
+\end{table}
+
+Tập kiểm thử được \textbf{giữ riêng}: không dùng để phân tích khám phá, chọn đặc trưng hay chọn siêu tham số; chỉ đánh giá mô hình cuối.
+
+\section{Kiểm định chéo theo thời gian}
+Trên tập huấn luyện, nhóm dùng \code{TimeSeriesSplit}~\cite{sklearn2026tss} với \code{n_splits=5}, \code{test_size=2160}, \code{gap=168}: mỗi fold kiểm định dài 2.160 giờ (90 ngày), tập huấn luyện mở rộng dần, và 168 mẫu (một tuần) cuối tập huấn luyện bị bỏ trước mỗi fold kiểm định.
+
+\begin{table}[H]
+\centering
+\caption{Các fold kiểm định chéo; mọi fold huấn luyện bắt đầu từ 16/12/2006}
+\label{tab:fold}
+\small
+\begin{tabular}{|c|r|c|r|c|}
+\hline
+\textbf{Fold} & \textbf{Mẫu huấn luyện} & \textbf{Huấn luyện đến} & \textbf{Mẫu kiểm định} & \textbf{Khoảng kiểm định} \\
+\hline
+1 & 15.555 & 27/09/2008 & 2.160 & 04/10/2008 -- 02/01/2009 \\
+2 & 17.715 & 26/12/2008 & 2.160 & 02/01/2009 -- 03/04/2009 \\
+3 & 19.875 & 27/03/2009 & 2.160 & 03/04/2009 -- 04/07/2009 \\
+4 & 22.035 & 27/06/2009 & 2.160 & 04/07/2009 -- 02/10/2009 \\
+5 & 24.195 & 25/09/2009 & 2.160 & 03/10/2009 -- 31/12/2009 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{hinh/hinh-02-c10.pdf}
+\caption{Sơ đồ 5 fold \code{TimeSeriesSplit} và tập kiểm thử; trục hoành là chỉ số mẫu}
+\label{fig:fold}
+\end{figure}
+
+\textbf{Nhận xét Bảng~\ref{tab:fold} và Hình~\ref{fig:fold}.}
+\begin{itemize}
+    \item Các fold kiểm định có \textbf{cùng kích thước} (2.160 mẫu), nối tiếp và không chồng nhau; tập huấn luyện tăng đúng 2.160 mẫu mỗi fold. Đây là thiết kế cửa sổ mở rộng của \code{TimeSeriesSplit}: tập huấn luyện sau chứa tập trước~\cite{sklearn2026tss}. Kiểm tra: $26.523 - 5 \times 2.160 - 168 = 15.555$, đúng bằng kích thước huấn luyện của fold 1.
+    \item Khoảng đệm 168 mẫu rất mỏng trên hình (khoảng 1\% độ dài tập huấn luyện) nhưng có mặt ở mọi fold. Khoảng đệm có hai tác dụng: (i) với $h$ tới 24, nhãn của các mẫu huấn luyện cuối cùng không trùng khoảng thời gian với nhãn của các mẫu kiểm định đầu tiên; (ii) giảm sự phụ thuộc giữa cuối tập huấn luyện và đầu tập kiểm định do tự tương quan. Nhóm chọn 168 vì bằng một chu kỳ tuần, đúng bằng độ trễ dài nhất của đặc trưng (\code{lag_167}) cộng một. Đây là lựa chọn thận trọng của nhóm, không phải giá trị bắt buộc.
+    \item Các fold kiểm định rơi vào bốn quý khác nhau, nên chênh lệch sai số giữa các fold có thể phản ánh cả mùa vụ lẫn kích thước tập huấn luyện. Vì vậy khi đánh giá mô hình, nhóm sẽ báo cáo trung bình $\pm$ độ lệch chuẩn qua 5 fold.
+    \item Trục hoành của Hình~\ref{fig:fold} là chỉ số mẫu (không phải ngày); vì có giờ NaN bị bỏ nên 2.160 mẫu ứng với xấp xỉ, không đúng tuyệt đối, 90 ngày.
+\end{itemize}
+
+\section{Đường ống tiền xử lý chỉ học trên tập huấn luyện}
+\label{sec:pipeline}
+\code{ColumnTransformer} gồm hai nhánh (notebook 02, ô [12]):
+\begin{itemize}
+    \item \code{hour}: \code{OneHotEncoder(handle_unknown="ignore")} $\rightarrow$ 24 cột;
+    \item 5 đặc trưng trễ: \code{SimpleImputer(strategy="median")} rồi \code{StandardScaler()}.
+\end{itemize}
+Đường ống được \code{fit} \textbf{một lần trên} \code{X_train}; tập kiểm thử chỉ gọi \code{transform}. Kết quả: $X_{\text{train}}$ (26.523 $\times$ 6) $\rightarrow$ $Z_{\text{train}}$ (26.523 $\times$ 29), $X_{\text{test}}$ (7.620 $\times$ 6) $\rightarrow$ $Z_{\text{test}}$ (7.620 $\times$ 29). Khi huấn luyện mô hình, đường ống này sẽ nằm trong \code{Pipeline} cùng mô hình, nên trong kiểm định chéo nó được \code{fit} lại trên phần huấn luyện của từng fold.
+
+\begin{table}[H]
+\centering
+\caption{Tham số học được từ tập huấn luyện}
+\label{tab:tham-so-hoc}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Đặc trưng} & \textbf{Trung vị} & \textbf{Trung bình} & \textbf{Độ lệch chuẩn} \\
+ & (\code{SimpleImputer}) & (\code{StandardScaler}) & (\code{StandardScaler}) \\
+\hline
+\code{lag_0} & 0,7939 & 1,1002 & 0,9278 \\
+\code{lag_1} & 0,7935 & 1,0999 & 0,9277 \\
+\code{lag_5} & 0,7936 & 1,0999 & 0,9274 \\
+\code{lag_23} & 0,7950 & 1,0994 & 0,9264 \\
+\code{lag_167} & 0,7902 & 1,0944 & 0,9228 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Kiểm chứng sau tiền xử lý}
+\label{tab:kiem-chung}
+\small
+\begin{tabular}{|l|c|c|c|c|c|c|}
+\hline
+ & \multicolumn{2}{c|}{\textbf{Số NaN, huấn luyện}} & \multicolumn{2}{c|}{\textbf{Số NaN, kiểm thử}} & \multicolumn{2}{c|}{\textbf{Kiểm thử sau chuẩn hóa}} \\
+\cline{2-7}
+\textbf{Đặc trưng} & Trước & Sau & Trước & Sau & TB & ĐLC \\
+\hline
+\code{lag_0} & 11 & 0 & 4 & 0 & $-$0,0426 & 0,8424 \\
+\code{lag_1} & 19 & 0 & 8 & 0 & $-$0,0422 & 0,8423 \\
+\code{lag_5} & 37 & 0 & 24 & 0 & $-$0,0419 & 0,8432 \\
+\code{lag_23} & 100 & 0 & 96 & 0 & $-$0,0441 & 0,8418 \\
+\code{lag_167} & 315 & 0 & 297 & 0 & $-$0,0291 & 0,8395 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{hinh/hinh-02-c14.pdf}
+\caption{Phân bố \code{lag_0} trên tập huấn luyện trước và sau tiền xử lý}
+\label{fig:chuan-hoa}
+\end{figure}
+
+\textbf{Nhận xét.} Sau tiền xử lý, số NaN về 0 ở cả hai tập. Trên tập huấn luyện, các đặc trưng có trung bình 0 và độ lệch chuẩn 1 đúng như định nghĩa của chuẩn hóa. Trên tập kiểm thử, trung bình khoảng $-0{,}04$ và độ lệch chuẩn khoảng 0,84: năm 2010 có mức tiêu thụ trung bình và độ biến động thấp hơn giai đoạn huấn luyện (trung bình nhãn 1,061 so với 1,100 kWh; độ lệch chuẩn 0,782 so với 0,928). Đây chính là điều chuẩn hóa đúng cách cần thể hiện: tập kiểm thử không bị ``ép'' về phân phối chuẩn tắc. Hình~\ref{fig:chuan-hoa} cho thấy chuẩn hóa chỉ dịch và co giãn trục, không thay đổi hình dạng lệch phải của phân bố.
+
+\section{Minh họa rò rỉ khi học tham số trên toàn bộ dữ liệu}
+
+\begin{table}[H]
+\centering
+\caption{Tham số \code{StandardScaler} khi \code{fit} chỉ trên huấn luyện so với trên huấn luyện + kiểm thử}
+\label{tab:ro-ri}
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+\textbf{Đặc trưng} & \textbf{TB đúng} & \textbf{TB rò rỉ} & \textbf{Chênh} & \textbf{ĐLC đúng} & \textbf{ĐLC rò rỉ} \\
+\hline
+\code{lag_0} & 1,1004 & 1,0916 & $-$0,0088 & 0,9280 & 0,8976 \\
+\code{lag_1} & 1,1001 & 1,0914 & $-$0,0087 & 0,9280 & 0,8975 \\
+\code{lag_5} & 1,1003 & 1,0917 & $-$0,0086 & 0,9280 & 0,8978 \\
+\code{lag_23} & 1,1005 & 1,0920 & $-$0,0086 & 0,9280 & 0,8983 \\
+\code{lag_167} & 1,0981 & 1,0938 & $-$0,0042 & 0,9277 & 0,8991 \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Nhận xét.} Nếu \code{fit} trên toàn bộ dữ liệu, trung bình và độ lệch chuẩn dùng để chuẩn hóa đã chứa thông tin của năm 2010 (độ lệch chuẩn giảm khoảng 0,03). Mức chênh nhỏ về số, nhưng sai về nguyên tắc: tại thời điểm triển khai, dữ liệu tương lai chưa tồn tại, và tài liệu scikit-learn cảnh báo việc \code{fit} trên toàn bộ dữ liệu có thể cho điểm đánh giá lạc quan quá mức~\cite{sklearn2026pitfalls}. Bảng này chỉ minh họa cơ chế; mức ảnh hưởng tới sai số của mô hình chưa được đo. Lưu ý: số trong Bảng~\ref{tab:ro-ri} khác Bảng~\ref{tab:tham-so-hoc} ở chữ số thứ tư vì ở đây chuẩn hóa được tính trên dữ liệu chưa điền khuyết (NaN được bỏ qua), còn Bảng~\ref{tab:tham-so-hoc} tính sau khi đã điền trung vị.
+
+\section{Tham số hóa phục vụ thao tác tại chỗ}
+\label{sec:tham-so}
+
+\begin{table}[H]
+\centering
+\caption{Các tham số có thể đổi nhanh}
+\label{tab:tham-so}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.3cm}|>{\raggedright\arraybackslash}p{2.4cm}|>{\raggedright\arraybackslash}p{3cm}|>{\raggedright\arraybackslash}p{5.6cm}|}
+\hline
+\textbf{Tham số} & \textbf{Vị trí} & \textbf{Mặc định} & \textbf{Ý nghĩa} \\
+\hline
+\code{THRESH} & 01, ô [16] & 54 & Số phút có đo tối thiểu để một giờ hợp lệ \\
+\hline
+\code{H} & 02, ô [4] & 1 & Tầm dự báo (giờ) \\
+\hline
+\code{IMPUTE_STRATEGY} & 02, ô [4] & \code{"median"} & Cách điền khuyết: \code{median}, \code{mean}, \code{most_frequent} \\
+\hline
+\code{TEST_START} & 02, ô [4] & 2010-01-01 & Mốc chia huấn luyện / kiểm thử \\
+\hline
+\code{N_SPLITS}, \code{TEST_SIZE}, \code{GAP} & 02, ô [4] & 5, 2160, 168 & Cấu hình \code{TimeSeriesSplit} \\
+\hline
+\code{STAT_COLUMN} & 02, ô [4] & \code{"lag_0"} & Cột để thống kê / vẽ nhanh \\
+\hline
+\end{tabular}
+\end{table}
+
+Ngoài ra, notebook 01 có các hàm \code{thong_ke_cot(df, cot)} và \code{ve_phan_bo(df, cot)} để thống kê và vẽ histogram, biểu đồ hộp cho một cột bất kỳ; notebook 02 có hàm \code{thao_tac_doi_phuong_phap_dien_khuyet(strategy)}. Ví dụ, đổi sang \code{"mean"} cho giá trị điền khuyết của \code{lag_0} là 1,1004 kWh (ô [19]), thay vì 0,7939 kWh với trung vị.
+
+\section{Kết luận chương}
+\begin{itemize}
+    \item Dữ liệu đã được làm sạch kiểu, tổng hợp thành 34.143 giờ có nhãn hợp lệ, chia thành 26.523 mẫu huấn luyện và 7.620 mẫu kiểm thử ($h=1$), với 5 fold kiểm định chéo có khoảng đệm 168 giờ và đường ống tiền xử lý chỉ học trên tập huấn luyện.
+    \item \textbf{Nội dung tiếp theo:} (i) đưa đặc trưng cửa sổ trượt vào mô hình, thêm ngày trong tuần, tháng, giá trị trễ của các nhóm phụ tải và đặt lại các độ trễ theo từng $h$; (ii) tính lại mức tham chiếu của mô hình cơ sở trên đúng các fold; (iii) với $h > 1$, kiểm tra lại số mẫu và ý nghĩa của \code{gap}.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,66 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+
+\section*{Lý do chọn đề tài}
+Dự báo phụ tải điện là bài toán nền tảng trong vận hành và lập kế hoạch hệ thống điện, và được nghiên cứu rộng rãi ở nhiều tầm dự báo khác nhau~\cite{hong2016probabilistic}. Ở cấp độ một hộ gia đình, chuỗi tiêu thụ điện chịu ảnh hưởng trực tiếp của thói quen sinh hoạt nên dao động mạnh theo giờ, theo ngày trong tuần và theo mùa. Đây là một bài toán thực tế phù hợp để luyện tập trọn vẹn quy trình học máy: từ phát biểu bài toán, khảo sát và làm sạch dữ liệu đến xây dựng, đánh giá và cải tiến mô hình.
+
+Bộ dữ liệu \textit{Individual Household Electric Power Consumption} của Kho dữ liệu Học máy UCI~\cite{hebrail2006uci} được chọn vì ba lý do: (i) là dữ liệu đo thực tế, công khai, có giấy phép CC~BY~4.0 cho phép sử dụng khi trích dẫn nguồn; (ii) đủ lớn (hơn hai triệu bản ghi theo phút trong gần bốn năm) để chia tập theo thời gian mà vẫn còn đủ dữ liệu kiểm thử; (iii) có các vấn đề chất lượng thật (giá trị khuyết thiếu dạng khối, ký tự lạ, biến gây rò rỉ) đòi hỏi xử lý có lập luận. Bộ dữ liệu này cũng đã được sử dụng trong các nghiên cứu dự báo điện năng dân dụng, ví dụ~\cite{kim2019predicting}.
+
+\section*{Mục tiêu nghiên cứu}
+\textbf{Mục tiêu tổng quát:} xây dựng và đánh giá một cách trung thực các mô hình học máy truyền thống dự báo điện năng tiêu thụ theo giờ của một hộ gia đình ở nhiều tầm dự báo, so sánh với các mô hình cơ sở đơn giản.
+
+\textbf{Mục tiêu cụ thể} (gắn với các mốc chấm của học phần):
+\begin{enumerate}[1.]
+    \item Phát biểu bài toán học máy, xác định nhãn, đơn vị mẫu, chỉ số và mức tham chiếu; khảo sát, đánh giá chất lượng và chuẩn bị dữ liệu không rò rỉ (Tuần 4 -- BKT1).
+    \item Xây dựng và so sánh mô hình cơ sở (naive, seasonal naive) với Linear Regression, Random Forest, XGBoost; đánh giá bằng MAE, RMSE, MAPE theo từng tầm dự báo, trực quan hóa kết quả dự báo và phân tích sai số theo thời điểm trong ngày (Tuần 6 -- BKT2).
+    \item Nhận diện hạn chế của mô hình, đề xuất và đo tác động của các cải tiến (Tuần 8 -- BKT3).
+    \item Hoàn thiện quy trình, báo cáo, khả năng chạy lại và trình diễn (Tuần 9 -- bài thi kết thúc).
+\end{enumerate}
+
+\section*{Đối tượng và phạm vi nghiên cứu}
+\begin{itemize}
+    \item \textbf{Đối tượng:} chuỗi điện năng tiêu thụ theo giờ của một hộ gia đình ở Sceaux (cách Paris khoảng 7~km, Pháp), tổng hợp từ dữ liệu đo theo phút giai đoạn 16/12/2006 -- 26/11/2010~\cite{hebrail2006uci}.
+    \item \textbf{Bài toán:} hồi quy có giám sát dự báo điện năng của giờ $t+h$ từ dữ liệu quan sát đến giờ $t$, với $h \in \{1, 6, 12, 24\}$ giờ.
+    \item \textbf{Phương pháp:} chỉ dùng các mô hình học máy truyền thống của thư viện scikit-learn~\cite{pedregosa2011scikit} và XGBoost; không dùng mạng nơ-ron sâu.
+    \item \textbf{Giới hạn:} dữ liệu của một hộ duy nhất nên kết luận không tự động khái quát cho các hộ khác; không có dữ liệu thời tiết hay lịch sinh hoạt của hộ.
+    \item \textbf{Phạm vi của báo cáo ở giai đoạn này:} cơ sở lý thuyết, phát biểu bài toán, phân tích dữ liệu, chất lượng dữ liệu và tiền xử lý. Nội dung xây dựng, đánh giá và cải tiến mô hình được bổ sung ở các giai đoạn tiếp theo của học phần.
+\end{itemize}
+
+\section*{Nội dung nghiên cứu}
+Nội dung của đề tài bám theo bốn hướng do giảng viên đề xuất khi đăng ký đề tài. Bảng~\ref{tab:noi-dung} cho biết mỗi nội dung được trình bày ở đâu và đã hoàn thành đến mức nào.
+
+\begin{table}[H]
+\centering
+\caption{Nội dung nghiên cứu theo đề xuất của giảng viên}
+\label{tab:noi-dung}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{6.6cm}|>{\raggedright\arraybackslash}p{2.6cm}|>{\raggedright\arraybackslash}p{4.8cm}|}
+\hline
+\textbf{Nội dung đề xuất} & \textbf{Vị trí} & \textbf{Mức độ hoàn thành} \\
+\hline
+1. Nghiên cứu bài toán dự báo chuỗi thời gian và cách chuyển về hồi quy có giám sát bằng đặc trưng trễ, cửa sổ trượt và đặc trưng lịch & Chương 1, 3 & Hoàn thành lý thuyết; đã xây dựng đặc trưng trễ, lịch và cửa sổ trượt \\
+\hline
+2. Tiền xử lý dữ liệu UCI: xử lý giá trị thiếu, tổng hợp theo giờ/ngày, phân tích tính mùa vụ & Chương 2, 3 & Hoàn thành: xử lý thiếu, tổng hợp theo giờ và theo ngày, mùa vụ theo giờ/thứ/tháng, ACF theo giờ và theo ngày \\
+\hline
+3. Mô hình cơ sở (naive, seasonal naive), Linear Regression, Random Forest, XGBoost; chia dữ liệu theo thời gian bằng \code{TimeSeriesSplit} & Chương 1, 2, 3 & Hoàn thành lý thuyết các mô hình, mức tham chiếu của mô hình cơ sở và \code{TimeSeriesSplit}; huấn luyện mô hình ở giai đoạn tiếp theo \\
+\hline
+4. Đánh giá bằng MAE, RMSE, MAPE theo các tầm dự báo; trực quan hóa dự báo; phân tích sai số theo thời điểm trong ngày & Chương 1, 2 & Đã định nghĩa chỉ số, tầm dự báo và mức tham chiếu; kết quả mô hình ở giai đoạn tiếp theo \\
+\hline
+\end{tabular}
+\end{table}
+
+\section*{Phương pháp nghiên cứu}
+Nhóm thực hiện theo quy trình thực nghiệm gồm các bước: (1) nghiên cứu tài liệu về dự báo chuỗi thời gian, chỉ số đánh giá và rò rỉ dữ liệu; (2) phân tích khám phá dữ liệu bằng thống kê mô tả, biểu đồ phân bố, tương quan và tự tương quan; (3) định lượng các vấn đề chất lượng dữ liệu và chọn phương án xử lý có lập luận; (4) chuẩn bị dữ liệu theo nguyên tắc chỉ học tham số trên tập huấn luyện; (5) huấn luyện, đánh giá và cải tiến mô hình bằng kiểm định chéo theo thời gian; (6) đánh giá một lần trên tập kiểm thử giữ riêng.
+
+Toàn bộ thực nghiệm được viết bằng Python 3.11.9 với pandas 3.1.0~\cite{mckinney2010data}, NumPy 2.4.6, scikit-learn 1.9.1~\cite{pedregosa2011scikit}, Matplotlib 3.11.2 và seaborn 0.13.2, trong hai notebook \code{01_eda.ipynb} và \code{02_chuan_bi_du_lieu.ipynb}. Mọi số liệu trong báo cáo được lấy từ kết quả chạy của hai notebook này; khi một con số được tính thêm ngoài notebook, báo cáo ghi rõ cách tính. Số liệu của Chương 2 và Mục~\ref{sec:van-de}--\ref{sec:truoc-sau} lấy từ notebook \code{01_eda.ipynb}; từ Mục~\ref{sec:giam-sat} trở đi lấy từ notebook \code{02_chuan_bi_du_lieu.ipynb}. Ký hiệu ``ô [k]'' trong báo cáo là ô thứ $k$ của notebook tương ứng (đánh số từ 0).
+
+\section*{Cấu trúc báo cáo}
+Ngoài phần Mở đầu, Kết luận, Tài liệu tham khảo và Phụ lục, nội dung chính của báo cáo gồm ba chương:
+\begin{itemize}
+    \item \textbf{Chương 1. Cơ sở lý thuyết:} tổng quan về bài toán dự báo điện năng, trí tuệ nhân tạo và học máy, dự báo chuỗi thời gian, các mô hình học máy được sử dụng, tiền xử lý dữ liệu, phương pháp đánh giá mô hình và các công cụ thống kê.
+    \item \textbf{Chương 2. Phát biểu bài toán và phân tích dữ liệu:} phát biểu bài toán học máy, mục tiêu và mức tham chiếu; nguồn dữ liệu, từ điển dữ liệu, phân tích khám phá và tính mùa vụ.
+    \item \textbf{Chương 3. Chất lượng dữ liệu và tiền xử lý:} định lượng và xử lý các vấn đề chất lượng dữ liệu, xây dựng bảng có giám sát và đặc trưng, chia dữ liệu theo thời gian và đường ống tiền xử lý.
+\end{itemize}
+Các chương về xây dựng, đánh giá và cải tiến mô hình được bổ sung vào báo cáo ở các giai đoạn tiếp theo của học phần.
+
+\end{document}

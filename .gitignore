@@ -1,0 +1,9 @@
+# Môi trường ảo và cache
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Dữ liệu lớn: không đưa lên Git (tải bằng link UCI hoặc lưu cục bộ)
+data/raw/
+data/processed/

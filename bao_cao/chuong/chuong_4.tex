@@ -1,0 +1,25 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+
+\trangthai{khung nội dung -- hoàn thiện ở Tuần 6 (Bài kiểm tra 2).}
+
+\section{Lựa chọn thuật toán}
+\dukien{Tuần 6}{Lý do chọn Linear Regression (kèm biến thể Ridge), Random Forest, XGBoost theo đề xuất của giảng viên, gắn với đặc điểm dữ liệu ở Chương 2: khoảng 26 nghìn mẫu, đặc trưng số có NaN, quan hệ phi tuyến theo giờ, đa cộng tuyến giữa các đặc trưng trễ.}
+
+\section{Mở rộng bộ đặc trưng}
+\dukien{Tuần 6}{Thêm ngày trong tuần, tháng, cờ cuối tuần, giá trị trễ của ba nhóm phụ tải, đưa vào mô hình các đặc trưng cửa sổ trượt đã xây dựng ở Mục~\ref{sec:truot}; đặt các độ trễ theo từng $h$ (ví dụ $24-h$, $168-h$). Cập nhật Bảng~\ref{tab:cot-dan-xuat} (từ điển cột dẫn xuất).}
+
+\section{Mô hình cơ sở trên các fold kiểm định}
+\dukien{Tuần 6}{Tính lại MAE, RMSE, MAPE, MASE của Naive, SNaive24, SNaive168 trên đúng 5 fold của Bảng~\ref{tab:fold} để thay mức tham chiếu trong mẫu ở Bảng~\ref{tab:baseline}.}
+
+\section{Huấn luyện và kiểm định chéo}
+\dukien{Tuần 6}{Pipeline (tiền xử lý + mô hình) với \code{random_state} cố định; tìm siêu tham số trên cùng các fold; bảng trung bình $\pm$ độ lệch chuẩn của MAE theo từng $h$.}
+
+\section{Đánh giá theo tầm dự báo}
+\dukien{Tuần 6}{Bảng MAE, RMSE, MAPE của mọi mô hình ở $h \in \{1, 6, 12, 24\}$; biểu đồ sai số theo tầm dự báo.}
+
+\section{So sánh mô hình và phân tích lỗi}
+\dukien{Tuần 6}{Bảng so sánh với mô hình cơ sở; biểu đồ dự báo so với thực tế trên một số tuần đại diện, histogram phần dư, sai số theo thời điểm trong ngày (0--23 giờ) và theo tháng; so sánh sai số trên tập huấn luyện và kiểm định để nhận diện quá khớp.}
+
+\end{document}

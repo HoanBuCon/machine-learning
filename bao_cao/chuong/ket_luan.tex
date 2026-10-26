@@ -1,0 +1,27 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+
+\section*{Kết quả đạt được}
+\begin{itemize}
+    \item Phát biểu bài toán hồi quy dự báo điện năng theo giờ với đơn vị mẫu, nhãn, đầu vào và tầm dự báo cụ thể; chọn MAE làm chỉ số chính, có mức tham chiếu từ mô hình cơ sở (0,449 kWh ở $h=1$, 0,639 kWh ở $h \ge 6$, tính trong mẫu trên tập huấn luyện).
+    \item Lập từ điển dữ liệu cho 9 cột gốc và các cột dẫn xuất; phân tích thống kê mô tả, phân bố, tương quan và tự tương quan, rút ra các hệ quả cho thiết kế đặc trưng (chu kỳ 24 và 168 giờ, loại \code{Global_intensity}).
+    \item Định lượng 10 nhóm vấn đề chất lượng dữ liệu; nổi bật là 25.979 phút thiếu tập trung thành 71 khối, trong đó 6 khối dài chiếm 94,9\%.
+    \item Xây dựng quy trình chuẩn bị dữ liệu không rò rỉ: nhãn theo giờ không nội suy, chia theo thời điểm mục tiêu, \code{TimeSeriesSplit} có khoảng đệm, \code{ColumnTransformer} chỉ \code{fit} trên tập huấn luyện, có minh họa định lượng về rò rỉ.
+    \item Tổng hợp chuỗi theo ngày để phân tích mùa vụ (tháng 12 gấp khoảng 2,5 lần tháng 8; chu kỳ tuần và năm thể hiện rõ trên ACF ngày); xây dựng và kiểm tra tính nhân quả của các đặc trưng cửa sổ trượt.
+\end{itemize}
+
+\section*{Hạn chế}
+\begin{itemize}
+    \item Dữ liệu của một hộ duy nhất, không có biến thời tiết; các giải thích về hành vi sinh hoạt (kỳ nghỉ tháng 8, sưởi mùa đông) mới là giả thuyết.
+    \item Bộ đặc trưng hiện tại mới tối thiểu; mức tham chiếu của mô hình cơ sở mới tính trong mẫu.
+\end{itemize}
+
+\section*{Hướng phát triển}
+\begin{itemize}
+    \item Xây dựng và so sánh các mô hình Linear Regression (kèm biến thể Ridge), Random Forest và XGBoost với các mô hình cơ sở trên cùng các fold kiểm định chéo, đánh giá bằng MAE, RMSE, MAPE theo từng tầm dự báo $h \in \{1, 6, 12, 24\}$.
+    \item Trực quan hóa kết quả dự báo và phân tích sai số theo thời điểm trong ngày, theo tháng và theo dải giá trị để nhận diện các trường hợp mô hình dự báo kém.
+    \item Đánh giá khả năng bổ sung dữ liệu ngoài (nhiệt độ, ngày lễ) để giải thích tốt hơn các biến động theo mùa.
+\end{itemize}
+
+\end{document}

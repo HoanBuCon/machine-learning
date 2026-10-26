@@ -1,0 +1,386 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+
+\section{Phát biểu bài toán học máy}
+\label{sec:phat-bieu}
+Bảng~\ref{tab:phat-bieu} cụ thể hóa bài toán trên dữ liệu của nhóm.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{3.4cm}|>{\raggedright\arraybackslash}p{11.1cm}|}
+\caption{Phát biểu bài toán học máy}
+\label{tab:phat-bieu}\\
+\hline
+\textbf{Thành phần} & \textbf{Nội dung} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Thành phần} & \textbf{Nội dung} \\
+\hline
+\endhead
+Loại bài toán & Học có giám sát, \textbf{hồi quy}: dự báo một giá trị thực liên tục. \\
+\hline
+Đơn vị mẫu & Một cặp (thời điểm gốc $t$ theo giờ, tầm dự báo $h$). Ví dụ: lúc 20:00 ngày 03/02/2009 dùng dữ liệu đến 20:00 để dự báo điện năng của giờ 21:00 ($h = 1$). \\
+\hline
+Đầu ra (nhãn) & $y_{t+h}$ = \code{energy_kwh} của giờ $t+h$, tính theo công thức~(\ref{eq:dien-nang}) (kWh, số thực dương). Giờ có dưới 54/60 phút đo được để trống (NaN) và không dùng làm nhãn (Mục~\ref{sec:nguong}). \\
+\hline
+Đầu vào & 6 đặc trưng chỉ dùng thông tin biết được tại $t$: \code{lag_0}, \code{lag_1}, \code{lag_5}, \code{lag_23}, \code{lag_167} (điện năng các giờ $t, t-1, t-5, t-23, t-167$) và \code{hour} (giờ trong ngày của thời điểm mục tiêu $t+h$). Bộ đặc trưng được mở rộng ở giai đoạn xây dựng mô hình. \\
+\hline
+Biến bị loại & \code{Global_intensity}, \code{Voltage} đo cùng thời điểm với nhãn: không có tại thời điểm dự báo, gây rò rỉ (Mục~\ref{sec:tuong-quan}). \\
+\hline
+Tầm dự báo & $h \in \{1, 6, 12, 24\}$ giờ, mỗi $h$ một mô hình (chiến lược trực tiếp). Notebook chuẩn bị dữ liệu minh họa với $h = 1$; $h$ là tham số \code{H} có thể đổi. \\
+\hline
+Số mẫu có nhãn & Tập huấn luyện (nhãn trước 01/01/2010): 26.523 ($h=1$), 26.518 ($h=6$), 26.512 ($h=12$), 26.500 ($h=24$). Tập kiểm thử (nhãn từ 01/01/2010): 7.620 với mọi $h$.$^{*}$ \\
+\hline
+\end{longtable}
+\vspace{-0.6cm}
+{\small $^{*}$ Số mẫu với $h = 1$ lấy từ notebook 02, ô [8]; với $h = 6, 12, 24$ được tính bằng cùng đoạn mã khi đổi tham số \code{H}.}
+
+\section{Mục tiêu, chỉ số và mức tham chiếu}
+\label{sec:muc-tieu}
+Bảng~\ref{tab:muc-tieu} liên kết mục tiêu thực tế với mục tiêu học máy và chỉ số đo.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{3.6cm}|>{\raggedright\arraybackslash}p{4.6cm}|>{\raggedright\arraybackslash}p{6cm}|}
+\caption{Mục tiêu thực tế, mục tiêu học máy và chỉ số}
+\label{tab:muc-tieu}\\
+\hline
+\textbf{Mục tiêu thực tế} & \textbf{Mục tiêu học máy} & \textbf{Chỉ số và mức} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Mục tiêu thực tế} & \textbf{Mục tiêu học máy} & \textbf{Chỉ số và mức} \\
+\hline
+\endhead
+Biết trước mức tiêu thụ của hộ trong 1--24 giờ tới để lên kế hoạch sử dụng điện & Dự báo $y_{t+h}$ với sai số tuyệt đối nhỏ & \textbf{Chỉ số chính: MAE (kWh).} Mức mong muốn (nhóm tự đặt): giảm ít nhất 10\% MAE so với mô hình cơ sở tốt nhất ở \textit{mỗi} $h$ \\
+\hline
+Không bỏ sót các giờ cao điểm buổi tối & Hạn chế sai số lớn ở giờ có tiêu thụ cao & \textbf{Chỉ số phụ: RMSE} (phạt nặng sai số lớn); phân tích sai số riêng theo khung giờ \\
+\hline
+Dễ giải thích cho người dùng & Có thước đo tương đối & \textbf{MAPE} chỉ để tham khảo vì nhãn có giờ rất nhỏ (min 0,124 kWh); \textbf{MASE} $< 1$ khi tốt hơn mô hình cơ sở \\
+\hline
+Kết quả tin cậy được & Đánh giá không rò rỉ, đủ ổn định & Trung bình $\pm$ độ lệch chuẩn qua 5 fold \code{TimeSeriesSplit}; đánh giá tập kiểm thử một lần \\
+\hline
+\end{longtable}
+
+\textbf{Lý do chọn MAE làm chỉ số chính.} (i) MAE có đơn vị kWh nên dễ diễn giải; (ii) nhãn lệch phải (skew = 1,31 trên tập huấn luyện) và có khoảng 2,26\% số giờ vượt râu trên của biểu đồ hộp (Mục~\ref{sec:nhan}), MAE ít bị chi phối bởi các giờ đỉnh này hơn RMSE; (iii) MAPE không phù hợp làm chỉ số chính vì nhạy với các giờ tiêu thụ thấp~\cite{hyndman2021fpp3,hyndman2006another}.
+
+\textbf{Mức tham chiếu.} Bảng~\ref{tab:baseline} là MAE của các mô hình cơ sở, tính \textit{trong mẫu} trên chuỗi nhãn của tập huấn luyện (trước 01/01/2010). Đây là mức tham chiếu ban đầu; khi xây dựng mô hình, các mô hình cơ sở sẽ được đánh giá lại trên đúng các fold kiểm định để so sánh công bằng với mô hình học máy. Cách tính: với chuỗi nhãn $y$ của tập huấn luyện, MAE của dự báo bằng giá trị trễ $k$ giờ là trung bình của $|y_t - y_{t-k}|$ trên các cặp đều có giá trị (bỏ cặp có NaN), với $k = h$ cho Naive và $k = 24, 168$ cho SNaive.
+
+\begin{table}[H]
+\centering
+\caption{MAE của các mô hình cơ sở trên tập huấn luyện (kWh)}
+\label{tab:baseline}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{6.2cm}|c|c|c|c|}
+\hline
+\textbf{Mô hình cơ sở} & $h=1$ & $h=6$ & $h=12$ & $h=24$ \\
+\hline
+Naive ($\hat{y}_{t+h} = y_t$) & 0,449 & 0,984 & 0,802 & --- \\
+\hline
+SNaive24 ($\hat{y}_{t+h} = y_{t+h-24}$) & 0,664 & 0,664 & 0,664 & 0,664 \\
+\hline
+SNaive168 ($\hat{y}_{t+h} = y_{t+h-168}$) & 0,639 & 0,639 & 0,639 & 0,639 \\
+\hline
+Trung bình tập huấn luyện (1,100 kWh) & 0,750 & 0,750 & 0,750 & 0,750 \\
+\hline
+\textbf{Mô hình cơ sở tốt nhất} & \textbf{0,449} & \textbf{0,639} & \textbf{0,639} & \textbf{0,639} \\
+\hline
+\end{tabular}
+\end{table}
+
+\noindent\textit{Nhận xét.} Ở $h = 1$, Naive tốt nhất vì tự tương quan bậc 1 cao (0,719, Mục~\ref{sec:tuong-quan}). Từ $h = 6$, Naive kém hơn cả việc dự báo bằng trung bình, trong khi SNaive168 (cùng giờ tuần trước) tốt nhất. Như vậy mức mong muốn của mô hình học máy là MAE $\le 0{,}404$ kWh ở $h = 1$ và $\le 0{,}575$ kWh ở $h \in \{6, 12, 24\}$ (giảm 10\%). Việc MAE của Naive ở $h=6$ (0,984) lớn hơn ở $h=12$ (0,802) phù hợp với hàm tự tương quan: hệ số ở độ trễ 6 gần như bằng 0 (0,023), còn ở độ trễ 12 là 0,245 (tính bằng cùng đoạn mã của notebook 01, ô [39]), có thể do nhịp sinh hoạt lặp lại trong ngày.
+
+\section{Định hướng giải quyết}
+\begin{enumerate}[1.]
+    \item Tổng hợp dữ liệu phút thành chuỗi điện năng theo giờ, giữ nguyên các giờ thiếu dưới dạng NaN thay vì nội suy (Chương 3).
+    \item Xây dựng bảng có giám sát cho từng $h$, chia huấn luyện / kiểm thử theo \textit{thời điểm mục tiêu} tại mốc 01/01/2010, kiểm định chéo bằng \code{TimeSeriesSplit} có khoảng đệm 168 giờ.
+    \item Gói toàn bộ tiền xử lý trong \code{Pipeline}/\code{ColumnTransformer}, chỉ \code{fit} trên dữ liệu huấn luyện.
+    \item So sánh Linear Regression, Random Forest, XGBoost với các mô hình cơ sở ở Bảng~\ref{tab:baseline} bằng MAE, RMSE, MAPE theo từng tầm dự báo.
+\end{enumerate}
+
+\section{Nguồn và điều kiện sử dụng dữ liệu}
+
+\begin{table}[H]
+\centering
+\caption{Thông tin nguồn dữ liệu}
+\label{tab:nguon}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{4cm}|>{\raggedright\arraybackslash}p{10.5cm}|}
+\hline
+\textbf{Thuộc tính} & \textbf{Giá trị} \\
+\hline
+Tên bộ dữ liệu & Individual Household Electric Power Consumption~\cite{hebrail2006uci} \\
+\hline
+Nơi lưu trữ, DOI & UCI Machine Learning Repository, DOI 10.24432/C58K54 \\
+\hline
+Tác giả & Georges Hébrail, Alice Bérard \\
+\hline
+Điều kiện sử dụng & Creative Commons Attribution 4.0 (CC BY 4.0): được dùng, chia sẻ, biến đổi với điều kiện ghi nguồn \\
+\hline
+Đối tượng đo & Một hộ gia đình ở Sceaux, cách Paris khoảng 7 km, Pháp \\
+\hline
+Thời gian, tần suất & 16/12/2006 17:24 -- 26/11/2010 21:02, mỗi phút một bản ghi (47 tháng theo mô tả của UCI) \\
+\hline
+Quy mô & 2.075.259 dòng $\times$ 9 cột; định dạng văn bản, phân tách bằng dấu ``;'' \\
+\hline
+Giá trị thiếu & Khoảng 1,25\% số dòng theo mô tả của UCI; đo thực tế: 25.979 dòng (1,252\%) \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Từ điển dữ liệu}
+Bảng~\ref{tab:tu-dien} mô tả 9 cột gốc. Ý nghĩa và đơn vị lấy theo trang UCI~\cite{hebrail2006uci}; kiểu dữ liệu và miền giá trị do nhóm đo trên dữ liệu (notebook 01, ô [5] và [7]). Lưu ý: UCI ghi đơn vị của công suất phản kháng là ``kilowatt''; về vật lý, đơn vị đúng là kvar, nên báo cáo dùng kvar.
+
+\small
+\begin{longtable}{|>{\raggedright\arraybackslash}p{4.4cm}|>{\raggedright\arraybackslash}p{3.1cm}|>{\raggedright\arraybackslash}p{1.5cm}|>{\raggedright\arraybackslash}p{1.8cm}|>{\raggedright\arraybackslash}p{3cm}|}
+\caption{Từ điển dữ liệu: 9 cột gốc}
+\label{tab:tu-dien}\\
+\hline
+\textbf{Cột} & \textbf{Ý nghĩa} & \textbf{Đơn vị} & \textbf{Kiểu (đọc thô $\rightarrow$ sau xử lý)} & \textbf{Miền giá trị; vai trò} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Cột} & \textbf{Ý nghĩa} & \textbf{Đơn vị} & \textbf{Kiểu} & \textbf{Miền giá trị; vai trò} \\
+\hline
+\endhead
+\code{Date} & Ngày đo (dd/mm/yyyy) & -- & chuỗi $\rightarrow$ thời gian & 16/12/2006 -- 26/11/2010; ghép thành chỉ mục thời gian \\
+\hline
+\code{Time} & Giờ đo (hh:mm:ss) & -- & chuỗi $\rightarrow$ thời gian & ghép với \code{Date} \\
+\hline
+\code{Global_active_power} & Công suất tác dụng trung bình phút của cả hộ & kW & chuỗi $\rightarrow$ float64 & 0,076 -- 11,122; \textbf{nguồn của nhãn} \\
+\hline
+\code{Global_reactive_power} & Công suất phản kháng trung bình phút & kvar & chuỗi $\rightarrow$ float64 & 0,000 -- 1,390; thống kê mô tả \\
+\hline
+\code{Voltage} & Điện áp trung bình phút & V & chuỗi $\rightarrow$ float64 & 223,20 -- 254,15; đo đồng thời với nhãn, không làm đầu vào \\
+\hline
+\code{Global_intensity} & Cường độ dòng điện trung bình phút & A & chuỗi $\rightarrow$ float64 & 0,2 -- 48,4; \textbf{loại bỏ} (rò rỉ, $r = 0{,}999$) \\
+\hline
+\code{Sub_metering_1} & Điện năng khu bếp (máy rửa bát, lò nướng, lò vi sóng) & Wh/phút & chuỗi $\rightarrow$ float64 & 0 -- 88; ứng viên đặc trưng trễ  \\
+\hline
+\code{Sub_metering_2} & Điện năng phòng giặt (máy giặt, máy sấy, tủ lạnh, đèn) & Wh/phút & chuỗi $\rightarrow$ float64 & 0 -- 80; ứng viên đặc trưng trễ \\
+\hline
+\code{Sub_metering_3} & Điện năng bình nước nóng và điều hòa & Wh/phút & float64 (ô trống) & 0 -- 31; ứng viên đặc trưng trễ \\
+\hline
+\end{longtable}
+\normalsize
+
+Bảng~\ref{tab:cot-dan-xuat} là các cột do nhóm tạo ra trong bảng theo giờ (\code{hourly.parquet}, notebook 01, ô [16]) và trong bảng có giám sát (notebook 02, ô [6]).
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{6.7cm}|>{\raggedright\arraybackslash}p{1.4cm}|>{\raggedright\arraybackslash}p{2.6cm}|}
+\caption{Từ điển dữ liệu: các cột dẫn xuất}
+\label{tab:cot-dan-xuat}\\
+\hline
+\textbf{Cột} & \textbf{Cách tính} & \textbf{Đơn vị} & \textbf{Biết tại thời điểm} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Cột} & \textbf{Cách tính} & \textbf{Đơn vị} & \textbf{Biết tại thời điểm} \\
+\hline
+\endhead
+\code{n_valid} & Số phút có đo của \code{Global_active_power} trong giờ & phút & cuối giờ đó \\
+\hline
+\code{energy_kwh} & Trung bình công suất các phút có đo $\times$ 1 h; NaN nếu \code{n_valid} $< 54$ & kWh & cuối giờ đó \\
+\hline
+\code{sub1_kwh} .. \code{sub3_kwh} & Trung bình \code{Sub_metering_i} $\times$ 60 / 1000; NaN nếu \code{n_valid} $< 54$ & kWh & cuối giờ đó \\
+\hline
+\code{other_kwh} & \code{energy_kwh} $-$ tổng ba \code{sub*_kwh} (thiết bị không đo riêng) & kWh & cuối giờ đó \\
+\hline
+\code{voltage_mean} & Trung bình điện áp trong giờ & V & cuối giờ đó \\
+\hline
+\code{lag_k} ($k \in \{0,1,5,23,167\}$) & \code{energy_kwh} của giờ $t - k$ & kWh & $t$ \\
+\hline
+\code{roll_mean_w} ($w \in \{3,24,168\}$), \code{roll_std_24} & Trung bình (độ lệch chuẩn) của \code{energy_kwh} trong $w$ giờ kết thúc tại $t$ & kWh & $t$ \\
+\hline
+\code{hour} & Giờ trong ngày của thời điểm mục tiêu $t + h$ & 0--23 & biết trước (lịch) \\
+\hline
+\code{target_time} & $t + h$ & thời gian & biết trước \\
+\hline
+\code{target} & \code{energy_kwh} của giờ $t + h$ & kWh & \textbf{chỉ biết sau} $t+h$ \\
+\hline
+\end{longtable}
+
+\section{Nạp dữ liệu và chuẩn hóa kiểu}
+Khi đọc 100.000 dòng đầu bằng \code{pd.read_csv} mà không khai báo giá trị thiếu, 6 cột số (\code{Global_active_power} đến \code{Sub_metering_2}) bị đọc thành \textbf{chuỗi} vì chứa ký tự ``?''; riêng \code{Sub_metering_3} để trống ô nên vẫn là số thực (notebook 01, ô [5]). Nhóm đọc lại toàn bộ tệp với \code{na_values=["?", ""]}, ép kiểu \code{float64}, ghép \code{Date} và \code{Time} thành chỉ mục thời gian, sắp xếp theo thời gian và lưu bộ nhớ đệm dạng Parquet. Kết quả: 2.075.259 dòng, 7 cột số.
+
+\section{Thống kê mô tả}
+\begin{table}[H]
+\centering
+\caption{Thống kê mô tả 7 biến đo theo phút}
+\label{tab:thong-ke}
+\small
+\begin{tabular}{|l|r|r|r|r|r|r|r|r|}
+\hline
+\textbf{Biến} & \textbf{TB} & \textbf{ĐLC} & \textbf{Min} & \textbf{Q1} & \textbf{Trung vị} & \textbf{Q3} & \textbf{Max} & \textbf{Skew} \\
+\hline
+GAP (kW) & 1,092 & 1,057 & 0,076 & 0,308 & 0,602 & 1,528 & 11,122 & 1,786 \\
+Reactive (kvar) & 0,124 & 0,113 & 0,000 & 0,048 & 0,100 & 0,194 & 1,390 & 1,262 \\
+Voltage (V) & 240,84 & 3,24 & 223,20 & 238,99 & 241,01 & 242,89 & 254,15 & $-$0,327 \\
+Intensity (A) & 4,628 & 4,444 & 0,200 & 1,400 & 2,600 & 6,400 & 48,400 & 1,849 \\
+SM1 (Wh/ph) & 1,122 & 6,153 & 0 & 0 & 0 & 0 & 88 & 5,945 \\
+SM2 (Wh/ph) & 1,299 & 5,822 & 0 & 0 & 0 & 1 & 80 & 7,091 \\
+SM3 (Wh/ph) & 6,458 & 8,437 & 0 & 0 & 1 & 17 & 31 & 0,725 \\
+\hline
+\end{tabular}
+\end{table}
+\noindent{\small Mỗi biến có 2.049.280 giá trị đo. Tỷ lệ phút bằng 0: Reactive 23,50\%, SM1 91,75\%, SM2 70,11\%, SM3 41,58\%; GAP, Voltage, Intensity 0\%.}
+
+\textbf{Nhận xét.}
+\begin{enumerate}[1.]
+    \item Cả 7 biến có cùng 2.049.280 giá trị, ít hơn tổng số dòng đúng 25.979: gợi ý các biến thiếu \textit{đồng thời}, được kiểm chứng ở Chương 3 (25.979 dòng thiếu cả 7 biến).
+    \item \code{Global_active_power} lệch phải mạnh: trung bình 1,092 kW gần gấp đôi trung vị 0,602 kW, skew 1,786; 75\% số phút dưới 1,528 kW nhưng giá trị lớn nhất tới 11,122 kW. Không có phút nào bằng 0: hộ luôn có tải nền tối thiểu 0,076 kW.
+    \item \code{Voltage} ổn định (độ lệch chuẩn 3,24 V quanh 240,84 V), gần đối xứng, hơi lệch trái (skew $-0{,}327$).
+    \item Các nhóm phụ tải hoạt động gián đoạn: khu bếp bằng 0 ở 91,75\% số phút. Tỷ lệ phút bếp hoạt động tăng từ 0,2--0,4\% lúc 4--5 giờ sáng lên 27,5\% lúc 21 giờ (ô [9]), khớp với giờ nấu ăn.
+    \item \code{Sub_metering_3} có trung bình lớn nhất trong ba nhóm (6,458 Wh/phút, gấp 2,67 lần tổng hai nhóm còn lại). Tính trên toàn bộ dữ liệu, SM3, SM2, SM1 lần lượt chiếm 35,5\%, 7,1\%, 6,2\% điện năng; \textbf{51,2\%} thuộc về thiết bị không đo riêng. Như vậy ba công tơ phụ chỉ giải thích khoảng một nửa điện năng của hộ.
+\end{enumerate}
+
+\section{Phân bố của các biến đo}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{hinh/hinh-01-c10.pdf}
+\caption{Phân bố công suất tác dụng theo phút: histogram kèm KDE (trái) và biểu đồ hộp (phải)}
+\label{fig:gap}
+\end{figure}
+
+\textbf{Nhận xét Hình~\ref{fig:gap}.} Phân bố lệch phải, khoảng 17,1\% số phút nằm trong vùng tải nền 0,2--0,3 kW. Đường KDE tràn nhẹ sang vùng âm là hiệu ứng làm trơn tại biên, không phải dữ liệu âm (giá trị nhỏ nhất 0,076 kW). Có 94.907 phút (4,63\%) vượt râu trên 3,358 kW; đây là các khoảng thời gian tiêu thụ cao kéo dài tới 11,122 kW. Chương 3 lập luận vì sao giữ lại các điểm này.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{hinh/hinh-01-c13.pdf}
+\caption{Histogram của 7 biến đo, trục tung thang logarit}
+\label{fig:bay-bien}
+\end{figure}
+
+\textbf{Nhận xét Hình~\ref{fig:bay-bien}.}
+\begin{itemize}
+    \item \code{Global_active_power} và \code{Global_intensity} có hình dạng gần như giống nhau, giảm dần sau vùng tải nền: dấu hiệu sớm của tương quan rất cao giữa hai biến.
+    \item \code{Voltage} có dạng chuông quanh khoảng 241 V.
+    \item \code{Sub_metering_1}, \code{Sub_metering_2} dồn gần hết tại 0 (91,7\% và 70,1\% số phút).
+    \item \code{Sub_metering_3} có hai cụm tách biệt: 0--1 Wh/phút (khoảng 64,6\% số phút) và 17--19 Wh/phút (khoảng 30,7\%). Dạng bật/tắt này phù hợp với thiết bị có bộ ổn nhiệt như bình nước nóng; đây là giả thuyết của nhóm, dữ liệu không cho biết thiết bị nào đang chạy.
+\end{itemize}
+
+\section{Nhãn mục tiêu và phân bố nhãn}
+\label{sec:nhan}
+Nhãn \code{energy_kwh} được tạo theo công thức~(\ref{eq:dien-nang}) với ngưỡng 54 phút có đo (ô [16]). Chuỗi theo giờ có 34.589 giờ, trong đó 34.143 giờ hợp lệ (98,71\%) và 446 giờ NaN (1,29\%). Toàn chuỗi: trung bình 1,092 kWh, độ lệch chuẩn 0,898, skew 1,298, min 0,124, max 6,561 kWh. Để không dùng thông tin của tập kiểm thử khi ra quyết định, phần phân tích phân bố và quan hệ dưới đây chỉ dùng \textbf{tập huấn luyện} (giờ trước 01/01/2010: 26.523 giờ hợp lệ, trung bình 1,100, trung vị 0,794, độ lệch chuẩn 0,928, skew 1,31 kWh).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{hinh/hinh-01-c17.pdf}
+\caption{Phân bố nhãn trên tập huấn luyện: histogram và biểu đồ hộp theo giờ, thứ, tháng}
+\label{fig:nhan}
+\end{figure}
+
+\textbf{Nhận xét Hình~\ref{fig:nhan}.}
+\begin{enumerate}[1.]
+    \item \textbf{Phân bố hai đỉnh:} đỉnh chính ở vùng tải nền khoảng 0,23 kWh và đỉnh thứ hai quanh 1,4 kWh. Một mô hình chỉ dự báo trung bình sẽ sai lệch ở cả hai vùng.
+    \item \textbf{Chu kỳ ngày rất rõ:} trung vị thấp nhất lúc 3--4 giờ sáng (0,315 kWh), cao nhất lúc 20 giờ (1,904 kWh; IQR 1,02--2,77). Độ lệch chuẩn lớn nhất ở 19--21 giờ (1,154; 1,176; 1,102) nên buổi tối dự kiến là khung giờ khó dự báo nhất. $\Rightarrow$ Cần đặc trưng giờ của thời điểm mục tiêu và giá trị cùng giờ hôm trước.
+    \item \textbf{Chu kỳ tuần:} trung vị thứ Bảy (1,014) và Chủ nhật (0,904) cao hơn các ngày trong tuần (ví dụ thứ Hai 0,665 kWh), có thể do các thành viên ở nhà nhiều hơn. $\Rightarrow$ Cần đặc trưng ngày trong tuần hoặc giá trị cùng giờ tuần trước.
+    \item \textbf{Mùa vụ:} trung vị tháng 12 cao nhất (1,398 kWh), tháng 8 thấp bất thường (0,289 kWh). Nhóm giả thuyết tháng 12 có nhu cầu sưởi và tháng 8 là kỳ nghỉ hè; dữ liệu không xác nhận được nguyên nhân. $\Rightarrow$ Cần đặc trưng tháng; tháng 8 là rủi ro cho mô hình.
+    \item \textbf{Mất cân bằng theo dải giá trị:} chỉ 2,26\% số giờ vượt râu trên 3,494 kWh. Đây là bài toán hồi quy nên không áp dụng cân bằng lớp, nhưng cần theo dõi sai số riêng ở các giờ đỉnh khi đánh giá mô hình.
+\end{enumerate}
+
+\section{Quan hệ giữa các biến và với nhãn}
+\label{sec:tuong-quan}
+
+\subsection{Tương quan giữa các biến đo và nhãn}
+Để so sánh cùng độ phân giải với nhãn, 7 biến được lấy trung bình theo giờ (chỉ các giờ đủ 54 phút) và chỉ dùng tập huấn luyện (ô [35]).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{hinh/hinh-01-c35.pdf}
+\caption{Ma trận tương quan Pearson (trái) và Spearman (phải) trên tập huấn luyện theo giờ}
+\label{fig:tuong-quan}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Hệ số tương quan của các biến đo với nhãn \code{energy_kwh} (tập huấn luyện)}
+\label{tab:tuong-quan}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Biến} & \textbf{Pearson} & \textbf{Spearman} \\
+\hline
+\code{Global_intensity} & 0,999 & 0,998 \\
+\code{Sub_metering_3} & 0,687 & 0,684 \\
+\code{Sub_metering_1} & 0,499 & 0,446 \\
+\code{Sub_metering_2} & 0,450 & 0,196 \\
+\code{Global_reactive_power} & 0,326 & 0,219 \\
+\code{Voltage} & $-$0,375 & $-$0,336 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Tương quan của các đặc trưng trễ với nhãn}
+Với $h = 1$, bảng có giám sát trên tập huấn luyện có 26.523 mẫu (ô [37]). Bảng~\ref{tab:lag} là tương quan Spearman của từng đặc trưng với nhãn.
+
+\begin{table}[H]
+\centering
+\caption{Tương quan Spearman giữa đặc trưng và nhãn, $h = 1$, tập huấn luyện}
+\label{tab:lag}
+\begin{tabular}{|l|c|c|c|c|c|c|}
+\hline
+\textbf{Đặc trưng} & \code{lag_0} & \code{lag_1} & \code{lag_23} & \code{lag_167} & \code{hour} & \code{lag_5} \\
+\hline
+\textbf{Spearman với nhãn} & 0,764 & 0,534 & 0,516 & 0,512 & 0,347 & 0,026 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{hinh/hinh-01-c39.pdf}
+\caption{Hàm tự tương quan của điện năng theo giờ trên tập huấn luyện, độ trễ 1--199}
+\label{fig:acf}
+\end{figure}
+
+ACF được tính trên chuỗi giữ nguyên vị trí NaN để độ trễ $k$ đúng bằng $k$ giờ: hệ số ở độ trễ 1, 6, 24, 168 lần lượt là 0,719; 0,023; 0,433; 0,465.
+
+\subsection{Nhận xét và hệ quả cho mô hình}
+\begin{enumerate}[1.]
+    \item \textbf{Rò rỉ qua \code{Global_intensity}.} Tương quan với nhãn là 0,999 (Pearson) và 0,998 (Spearman); trên dữ liệu phút, tương quan giữa công suất và $V \cdot I / 1000$ là 0,99909 (ô [20]). Đại lượng này đo cùng lúc với nhãn nên không có tại thời điểm dự báo. $\Rightarrow$ \textbf{Loại bỏ}, cùng với \code{Voltage} của thời điểm mục tiêu.
+    \item \textbf{Tương quan giảm nhanh rồi tăng lại theo chu kỳ.} ACF giảm từ 0,719 (độ trễ 1) xuống 0,023 (độ trễ 6), sau đó tăng lại ở 24 giờ (0,433) và 168 giờ (0,465). Ở bảng đặc trưng, \code{lag_5} gần như không tương quan với nhãn (0,026). $\Rightarrow$ Với $h \ge 6$, thông tin chủ yếu đến từ giá trị cùng giờ hôm trước và tuần trước (độ trễ $24 - h$ và $168 - h$ tính từ $t$), không phải từ các giờ gần nhất.
+    \item \textbf{Quan hệ giữa giờ và nhãn không đơn điệu.} Tiêu thụ thấp ban đêm, tăng buổi sáng và đạt đỉnh buổi tối (Hình~\ref{fig:nhan}), nên hệ số Spearman 0,347 đánh giá thấp vai trò của \code{hour}. $\Rightarrow$ Với mô hình tuyến tính, nên mã hóa one-hot cho \code{hour}; mô hình cây có thể tự học quan hệ này.
+    \item \textbf{Các đặc trưng trễ tương quan với nhau.} Ví dụ \code{lag_0} và \code{lag_1} tương quan 0,764; \code{lag_23} và \code{lag_167} tương quan 0,460 (ô [37]). $\Rightarrow$ Hệ số của Linear Regression có thể kém ổn định; khi xây dựng mô hình, nhóm sẽ so sánh thêm biến thể Ridge (điều chuẩn L2).
+    \item \textbf{Nhóm phụ tải phụ.} \code{Sub_metering_3} tương quan cao nhất với nhãn (0,687) trong ba nhóm. Đây là giá trị cùng thời điểm, nên chỉ có thể dùng \textit{giá trị trễ} của các nhóm này làm đặc trưng; tác động sẽ được đo khi xây dựng mô hình.
+    \item \textbf{Điện áp tương quan âm} với nhãn ($-0{,}375$): giờ tiêu thụ cao thường có điện áp thấp hơn. Một giải thích khả dĩ là sụt áp trên đường dây khi tải lớn; dữ liệu không đủ để kiểm chứng.
+\end{enumerate}
+
+
+\section{Tổng hợp theo ngày và tính mùa vụ}
+\label{sec:ngay}
+Điện năng ngày bằng tổng điện năng 24 giờ; chỉ giữ ngày đủ 24 giờ hợp lệ, ngày thiếu dù một giờ được gán NaN để không đánh giá thấp điện năng của ngày đó (notebook 01, ô [42]). Trong 1.442 ngày có 31 ngày bị loại (gồm cả ngày đầu và ngày cuối không trọn vẹn); tập huấn luyện còn 1.097 ngày hợp lệ: trung bình 26,43 kWh/ngày, trung vị 26,07, độ lệch chuẩn 10,48, nhỏ nhất 4,17, lớn nhất 79,56, skew 0,59.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{hinh/hinh-01-c42.pdf}
+\caption{Điện năng theo ngày trên tập huấn luyện: chuỗi ngày kèm trung bình trượt 30 ngày (trên), biểu đồ hộp theo thứ và theo tháng (dưới)}
+\label{fig:ngay}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Trung vị điện năng ngày theo thứ và tự tương quan của chuỗi ngày (tập huấn luyện)}
+\label{tab:ngay}
+\begin{tabular}{|l|c|c|c|c|c|c|c|}
+\hline
+\textbf{Thứ} & T2 & T3 & T4 & T5 & T6 & T7 & CN \\
+\hline
+\textbf{Trung vị (kWh/ngày)} & 23,73 & 26,79 & 26,40 & 23,24 & 25,09 & 29,52 & 29,86 \\
+\hline
+\end{tabular}
+
+\vspace{0.3cm}
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+\textbf{Độ trễ (ngày)} & 1 & 6 & 7 & 182 & 364 \\
+\hline
+\textbf{Tự tương quan} & 0,607 & 0,499 & 0,554 & $-$0,271 & 0,537 \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Nhận xét Hình~\ref{fig:ngay} và Bảng~\ref{tab:ngay}.}
+\begin{enumerate}[1.]
+    \item \textbf{Mức độ lệch giảm khi gộp theo ngày:} skew 0,59 ở thang ngày so với 1,31 ở thang giờ, vì các đỉnh trong ngày đã được cộng gộp.
+    \item \textbf{Mùa vụ theo năm rõ rệt:} trung bình trượt 30 ngày dao động theo năm; trung vị tháng 12 (34,31 kWh/ngày) gấp khoảng 2,5 lần tháng 8 (13,79). Tự tương quan ở độ trễ 364 ngày là 0,537, còn ở độ trễ 182 ngày (mùa ngược lại) là $-0{,}271$.
+    \item \textbf{Mùa vụ theo tuần:} thứ Bảy và Chủ nhật có trung vị cao nhất; tự tương quan ở độ trễ 7 ngày (0,554) cao hơn ở 6 ngày (0,499), khớp với đỉnh ở độ trễ 168 giờ của ACF theo giờ (Hình~\ref{fig:acf}).
+    \item \textbf{Hệ quả cho mô hình:} cần đặc trưng tháng và ngày trong tuần (hoặc cờ cuối tuần); đặc trưng cửa sổ trượt dài (168 giờ) giúp mô hình biết mức nền của tuần hiện tại (Mục~\ref{sec:truot}). Nguyên nhân tháng 8 thấp (giả thuyết: kỳ nghỉ hè) không kiểm chứng được từ dữ liệu.
+\end{enumerate}
+
+\end{document}

@@ -1,0 +1,100 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+
+\section*{Phụ lục A. Đối chiếu tiêu chí Bài kiểm tra 1 (tiêu chí 1--8)}
+\addcontentsline{toc}{section}{Phụ lục A. Đối chiếu tiêu chí Bài kiểm tra 1 (tiêu chí 1--8)}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.9cm}|>{\raggedright\arraybackslash}p{5.2cm}|>{\raggedright\arraybackslash}p{8.3cm}|}
+\caption{Vị trí minh chứng cho từng tiêu chí của BKT1}
+\label{tab:doi-chieu}\\
+\hline
+\textbf{TC} & \textbf{Yêu cầu} & \textbf{Minh chứng trong báo cáo và mã nguồn} \\
+\hline
+\endfirsthead
+\hline
+\textbf{TC} & \textbf{Yêu cầu} & \textbf{Minh chứng trong báo cáo và mã nguồn} \\
+\hline
+\endhead
+1 & Loại bài toán, đơn vị mẫu, đầu vào, đầu ra & Mục~\ref{sec:phat-bieu}, Bảng~\ref{tab:phat-bieu} \\
+\hline
+2 & Mục tiêu -- chỉ số -- mức tham chiếu & Mục~\ref{sec:muc-tieu}, Bảng~\ref{tab:muc-tieu}, \ref{tab:baseline} \\
+\hline
+3 & Nguồn, điều kiện sử dụng, quy mô, từ điển dữ liệu & Bảng~\ref{tab:nguon}, \ref{tab:tu-dien}, \ref{tab:cot-dan-xuat} \\
+\hline
+4 & Thống kê mô tả, phân bố đặc trưng và nhãn, nhận xét từng hình & Bảng~\ref{tab:thong-ke}; Hình~\ref{fig:gap}, \ref{fig:bay-bien}, \ref{fig:nhan}, \ref{fig:ngay} kèm nhận xét \\
+\hline
+5 & Tương quan đặc trưng -- nhãn, ít nhất 3 nhận xét & Mục~\ref{sec:tuong-quan}: Hình~\ref{fig:tuong-quan}, \ref{fig:acf}; Bảng~\ref{tab:tuong-quan}, \ref{tab:lag}; 6 nhận xét \\
+\hline
+6 & Định lượng thiếu, trùng, ngoại lai, sai định dạng, mất cân bằng, rò rỉ & Bảng~\ref{tab:van-de}, \ref{tab:khoi-thieu}; Hình~\ref{fig:thieu} \\
+\hline
+7 & Xử lý từng vấn đề có lý do; so sánh trước -- sau & Bảng~\ref{tab:xu-ly}, \ref{tab:nguong}, \ref{tab:truoc-sau}; Hình~\ref{fig:truoc-sau} \\
+\hline
+8 & Mã hóa, chuẩn hóa, chia theo thời gian, fit chỉ trên huấn luyện, kích thước các tập & Bảng~\ref{tab:kich-thuoc}, \ref{tab:fold}, \ref{tab:tham-so-hoc}, \ref{tab:kiem-chung}, \ref{tab:ro-ri}, \ref{tab:truot}; Hình~\ref{fig:fold}, \ref{fig:chuan-hoa} \\
+\hline
+\end{longtable}
+
+\needspace{10\baselineskip}
+\section*{Phụ lục B. Phân công và minh chứng đóng góp}
+\addcontentsline{toc}{section}{Phụ lục B. Phân công và minh chứng đóng góp}
+
+Hai thành viên cùng nghiên cứu và làm việc chung ở hầu hết các bước: cùng đọc tài liệu, cùng thảo luận để thống nhất các quyết định xử lý dữ liệu, và kiểm tra chéo phần việc của nhau. Để rõ trách nhiệm, mỗi hạng mục có một người \textit{chủ trì} (viết mã, viết phần báo cáo tương ứng) và một người \textit{rà soát} (chạy lại, đối chiếu số liệu, góp ý). Cả hai thành viên đều phải giải thích được toàn bộ nội dung khi vấn đáp.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{6.4cm}|>{\raggedright\arraybackslash}p{2.6cm}|>{\raggedright\arraybackslash}p{2.6cm}|>{\raggedright\arraybackslash}p{2.8cm}|}
+\caption{Phân công công việc}
+\label{tab:phan-cong}\\
+\hline
+\textbf{Hạng mục} & \textbf{Chủ trì} & \textbf{Rà soát} & \textbf{Sản phẩm} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Hạng mục} & \textbf{Chủ trì} & \textbf{Rà soát} & \textbf{Sản phẩm} \\
+\hline
+\endhead
+Tìm hiểu đề tài, cơ sở lý thuyết, chọn bộ dữ liệu, phát biểu bài toán và chỉ số & Cả hai & Cả hai & Chương 1, 2 \\
+\hline
+Nạp dữ liệu, từ điển dữ liệu, thống kê mô tả, phân bố các biến & \tvmot & \tvhai & Notebook 01; Chương 2 \\
+\hline
+Nhãn theo giờ, tương quan, tự tương quan & \tvhai & \tvmot & Notebook 01; Chương 2 \\
+\hline
+Định lượng chất lượng dữ liệu, xử lý, so sánh trước -- sau & \tvmot & \tvhai & Notebook 01; Chương 3 \\
+\hline
+Bảng có giám sát, chia tập, \code{TimeSeriesSplit}, pipeline tiền xử lý, minh họa rò rỉ & \tvhai & \tvmot & Notebook 02; Chương 3 \\
+\hline
+Tổng hợp, biên soạn báo cáo & Cả hai & Cả hai & Báo cáo \\
+\hline
+\end{longtable}
+
+\clearpage
+\section*{Phụ lục C. Khai báo sử dụng công cụ trí tuệ nhân tạo tạo sinh}
+\addcontentsline{toc}{section}{Phụ lục C. Khai báo sử dụng công cụ AI tạo sinh}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{3cm}|>{\raggedright\arraybackslash}p{6.4cm}|>{\raggedright\arraybackslash}p{5cm}|}
+\caption{Phạm vi sử dụng công cụ AI tạo sinh}
+\label{tab:ai}\\
+\hline
+\textbf{Công cụ} & \textbf{Phạm vi sử dụng} & \textbf{Phần do nhóm thực hiện và kiểm chứng} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Công cụ} & \textbf{Phạm vi sử dụng} & \textbf{Phần do nhóm thực hiện và kiểm chứng} \\
+\hline
+\endhead
+Claude Code (Anthropic) và Codex (OpenAI) & \begin{itemize}[leftmargin=*, nosep]
+    \item Hướng dẫn, định hướng các bước thực hiện dự án theo tiêu chí của học phần.
+    \item Rà soát mã nguồn và nhận xét trong hai notebook; đề xuất rút gọn mã, sửa lỗi hiển thị biểu đồ.
+    \item Tính lại độc lập để kiểm tra các con số trong nhận xét.
+    \item Tra cứu, xác minh tài liệu tham khảo.
+    \item Hỗ trợ soạn bản nháp báo cáo theo mẫu LaTeX của Trường.
+\end{itemize}
+& \begin{itemize}[leftmargin=*, nosep]
+    \item Chọn đề tài, bộ dữ liệu; quyết định hướng tiếp cận và các phương án xử lý dữ liệu.
+    \item Viết mã notebook với sự hỗ trợ của công cụ: nhóm viết khung và phần lớn logic xử lý, công cụ gợi ý hoặc sinh một số đoạn mã; nhóm đọc hiểu, chỉnh sửa và quyết định giữ hay bỏ từng đoạn.
+    \item Chạy lại toàn bộ notebook, đối chiếu mọi số liệu trong báo cáo với kết quả chạy.
+    \item Chỉnh sửa nội dung, lời văn; chịu trách nhiệm về toàn bộ báo cáo và giải thích được mọi phần khi vấn đáp.
+\end{itemize} \\
+\hline
+\end{longtable}
+
+
+\end{document}
