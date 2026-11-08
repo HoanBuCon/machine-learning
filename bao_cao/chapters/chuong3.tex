@@ -1,7 +1,7 @@
 \chapter{XÂY DỰNG VÀ ĐÁNH GIÁ MÔ HÌNH}
 \label{chap:models}
 
-Chương này trình bày bộ đặc trưng, lý do lựa chọn thuật toán, quy trình huấn luyện và kiểm định chéo, kết quả so sánh các mô hình với mô hình cơ sở, phân tích lỗi và các đặc trưng ảnh hưởng nhiều đến dự báo. Số liệu được lấy từ notebook \code{03_huan_luyen_danh_gia.ipynb}; các bảng kết quả được sinh tự động từ tệp kết quả của notebook. Ở giai đoạn này, tập kiểm tra năm 2010 \textbf{chưa được sử dụng}; mọi kết quả là kết quả kiểm định chéo trên tập huấn luyện.
+Chương này trình bày bộ đặc trưng, lý do lựa chọn thuật toán, quy trình huấn luyện và kiểm định chéo, kết quả so sánh các mô hình với mô hình cơ sở, phân tích lỗi và các đặc trưng ảnh hưởng nhiều đến dự báo. Ở giai đoạn này, tập kiểm tra năm 2010 chưa được sử dụng; mọi kết quả là kết quả kiểm định chéo trên tập huấn luyện.
 
 \section{Bộ đặc trưng}
 \label{sec:features}
@@ -16,8 +16,8 @@ Với mỗi tầm dự báo $h$, bảng có giám sát gồm 21 đặc trưng ch
     \begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}p{2.6cm}|>{\raggedright\arraybackslash}p{5.6cm}|>{\raggedright\arraybackslash}X|}
         \hline
         \textbf{Nhóm} & \textbf{Đặc trưng} & \textbf{Căn cứ} \\ \hline
-        Trễ (9) & \code{lag_k} $= y_{t-k}$, $k \in \{0,1,2,3,5,11,23,47,167\}$ & Tự tương quan cao ở vài giờ gần nhất và ở 24, 168 giờ (Hình~\ref{fig:acf}) \\ \hline
-        Cùng giờ của mục tiêu (2) & \code{same_hour_prev_day} $= y_{t+h-24}$, \code{same_hour_prev_week} $= y_{t+h-168}$ & Chu kỳ ngày và tuần; cũng là đầu vào của SNaive24, SNaive168 \\ \hline
+        Trễ (9) & $y_{t-k}$, $k \in \{0,1,2,3,5,11,23,47,167\}$ & Tự tương quan cao ở vài giờ gần nhất và ở 24, 168 giờ (Hình~\ref{fig:acf}) \\ \hline
+        Cùng giờ của mục tiêu (2) & $y_{t+h-24}$ (cùng giờ ngày trước), $y_{t+h-168}$ (cùng giờ tuần trước) & Chu kỳ ngày và tuần; cũng là đầu vào của SNaive24, SNaive168 \\ \hline
         Cửa sổ trượt (6) & Trung bình và độ lệch chuẩn của 3, 24, 168 giờ gần nhất, kết thúc tại $t$ & Mức nền và độ biến động gần đây \\ \hline
         Lịch (4) & Giờ, thứ, tháng, cờ cuối tuần của thời điểm mục tiêu $t+h$ & Mùa vụ theo giờ, tuần, năm (Hình~\ref{fig:label}, \ref{fig:daily}) \\ \hline
     \end{tabularx}
@@ -39,21 +39,21 @@ Nhóm dùng bốn mô hình cơ sở theo~\eqref{eq:baselines}: Mean (trung bìn
         \hline
         \textbf{Mô hình} & \textbf{Lý do lựa chọn} & \textbf{Tiền xử lý và siêu tham số} \\ \hline
         Linear Regression & Mô hình tham số đơn giản nhất, dễ diễn giải; kiểm tra phần quan hệ tuyến tính giữa nhãn và các giá trị trễ. & One-hot giờ, thứ, tháng (bỏ một mức mỗi nhóm); điền trung vị và chuẩn hóa cột số. \\ \hline
-        Random Forest & Học được quan hệ phi tuyến và tương tác giờ $\times$ thứ $\times$ tháng mà khảo sát đã chỉ ra; lấy trung bình nhiều cây giúp giảm phương sai. & Điền trung vị; 300 cây, \code{min_samples_leaf}=5, \code{max_features}=0,5. \\ \hline
-        XGBoost & Boosting cây thường cho sai số thấp trên dữ liệu dạng bảng khoảng vài chục nghìn mẫu; xử lý trực tiếp giá trị thiếu sau các khối dữ liệu thiếu. & 400 cây, \code{learning_rate}=0,05, \code{max_depth}=6, \code{min_child_weight}=5, \code{subsample} và \newline\code{colsample_bytree} bằng 0,8. \\ \hline
+        Random Forest & Học được quan hệ phi tuyến và tương tác giờ $\times$ thứ $\times$ tháng mà khảo sát đã chỉ ra; lấy trung bình nhiều cây giúp giảm phương sai. & Điền trung vị; 300 cây; tối thiểu 5 mẫu ở mỗi lá; mỗi lần tách xét 50\% số đặc trưng. \\ \hline
+        XGBoost & Boosting cây thường cho sai số thấp trên dữ liệu dạng bảng khoảng vài chục nghìn mẫu; xử lý trực tiếp giá trị thiếu sau các khối dữ liệu thiếu. & 400 cây; tốc độ học 0,05; độ sâu tối đa 6; tổng trọng số tối thiểu ở lá 5; mỗi cây dùng 80\% số mẫu và 80\% số đặc trưng. \\ \hline
     \end{tabularx}
 \end{table}
 
-Siêu tham số được cố định trước ở các giá trị phổ biến và \textbf{không} được chọn theo kết quả kiểm định. Việc dò tìm siêu tham số trên kiểm định chéo thuộc giai đoạn tối ưu hóa ở bước tiếp theo; tách hai giai đoạn giúp đo được tác động của việc tối ưu. Mọi mô hình đặt \code{random_state = 42}.
+Siêu tham số được cố định trước ở các giá trị phổ biến và không được chọn theo kết quả kiểm định. Việc dò tìm siêu tham số trên kiểm định chéo thuộc giai đoạn tối ưu hóa ở bước tiếp theo; tách hai giai đoạn giúp đo được tác động của việc tối ưu. Mọi mô hình cố định hạt giống ngẫu nhiên bằng 42 để kết quả tái lập được.
 
 \section{Quy trình huấn luyện và đánh giá}
 \label{sec:protocol}
 
-Mỗi mô hình học máy là một \code{Pipeline} gồm các bước tiền xử lý và mô hình. Quy trình kiểm định chéo trên tập huấn luyện như sau:
+Mỗi mô hình học máy được tổ chức thành một Pipeline gồm các bước tiền xử lý và mô hình. Quy trình kiểm định chéo trên tập huấn luyện như sau:
 \begin{enumerate}
-    \item Dùng 5 fold \code{TimeSeriesSplit} như Bảng~\ref{tab:folds}; mỗi tầm dự báo $h$ huấn luyện một mô hình riêng.
-    \item Ở mỗi fold, \code{Pipeline} được \code{fit} lại chỉ trên phần huấn luyện của fold đó, nên giá trị điền khuyết và tham số chuẩn hóa không chứa thông tin của phần kiểm định.
-    \item Mọi mô hình được chấm trên \textbf{cùng tập mẫu kiểm định}: bỏ các giờ mà mô hình cơ sở thiếu giá trị quá khứ (sau các khối dữ liệu thiếu). Mỗi fold còn 2.080--2.160 mẫu, tổng cộng khoảng 10.670 mẫu cho mỗi $h$.
+    \item Dùng 5 fold TimeSeriesSplit như Bảng~\ref{tab:folds}; mỗi tầm dự báo $h$ huấn luyện một mô hình riêng.
+    \item Ở mỗi fold, Pipeline được khớp lại chỉ trên phần huấn luyện của fold đó, nên giá trị điền khuyết và tham số chuẩn hóa không chứa thông tin của phần kiểm định.
+    \item Mọi mô hình được chấm trên cùng tập mẫu kiểm định: bỏ các giờ mà mô hình cơ sở thiếu giá trị quá khứ (sau các khối dữ liệu thiếu). Mỗi fold còn 2.080--2.160 mẫu, tổng cộng khoảng 10.670 mẫu cho mỗi $h$.
     \item Ghi lại MAE, RMSE, MAPE trên phần kiểm định và trên phần huấn luyện (trong mẫu) để nhận diện quá khớp; báo cáo trung bình $\pm$ độ lệch chuẩn qua 5 fold.
 \end{enumerate}
 Toàn bộ quy trình chạy trong khoảng 2 phút trên máy 16 luồng. Chạy lại từ đầu trong một môi trường ảo mới (tự tải dữ liệu từ UCI) cho kết quả trùng khớp đến sai số làm tròn ($10^{-14}$).
@@ -74,9 +74,9 @@ Toàn bộ quy trình chạy trong khoảng 2 phút trên máy 16 luồng. Chạ
 
 Từ Bảng~\ref{tab:cv_summary}, Bảng~\ref{tab:vs_baseline} và Hình~\ref{fig:mae_h}:
 \begin{enumerate}
-    \item \textbf{Cả ba mô hình học máy vượt mọi mô hình cơ sở ở mọi tầm dự báo và ở cả 5/5 fold}, giảm MAE 12,7--20,0\% so với mô hình cơ sở tốt nhất. Mức mong muốn giảm ít nhất 10\% đặt ra ở Bảng~\ref{tab:objectives} đạt được với cả ba mô hình.
-    \item \textbf{Mô hình cơ sở tốt nhất thay đổi theo $h$.} Naive tốt nhất ở $h = 1$ (MAE 0,440 kWh) nhưng kém nhất ở $h = 6$ (0,971 kWh, kém cả Mean), đúng như tự tương quan gần bằng 0 ở độ trễ 6. Từ $h = 6$, SNaive168 tốt nhất (khoảng 0,602 kWh).
-    \item \textbf{Random Forest có MAE thấp nhất hoặc ngang thấp nhất ở cả bốn tầm dự báo}: 0,365 kWh ở $h = 1$ và 0,482--0,495 kWh ở $h \ge 6$. XGBoost gần như ngang Random Forest ở $h \le 12$ (chênh lệch không quá 0,006 kWh), nhưng ở $h = 24$ chỉ ngang Linear Regression (0,507 kWh) và có độ lệch chuẩn giữa các fold lớn nhất (0,115). Linear Regression kém hai mô hình cây 0,01--0,03 kWh.
+    \item Cả ba mô hình học máy vượt mọi mô hình cơ sở ở mọi tầm dự báo và ở cả 5/5 fold, giảm MAE 12,7--20,0\% so với mô hình cơ sở tốt nhất. Mức mong muốn giảm ít nhất 10\% đặt ra ở Bảng~\ref{tab:objectives} đạt được với cả ba mô hình.
+    \item Mô hình cơ sở tốt nhất thay đổi theo $h$. Naive tốt nhất ở $h = 1$ (MAE 0,440 kWh) nhưng kém nhất ở $h = 6$ (0,971 kWh, kém cả Mean), đúng như tự tương quan gần bằng 0 ở độ trễ 6. Từ $h = 6$, SNaive168 tốt nhất (khoảng 0,602 kWh).
+    \item Random Forest có MAE thấp nhất hoặc ngang thấp nhất ở cả bốn tầm dự báo: 0,365 kWh ở $h = 1$ và 0,482--0,495 kWh ở $h \ge 6$. XGBoost gần như ngang Random Forest ở $h \le 12$ (chênh lệch không quá 0,006 kWh), nhưng ở $h = 24$ chỉ ngang Linear Regression (0,507 kWh) và có độ lệch chuẩn giữa các fold lớn nhất (0,115). Linear Regression kém hai mô hình cây 0,01--0,03 kWh.
     \item Các chênh lệch giữa ba mô hình học máy nhỏ hơn độ lệch chuẩn giữa các fold (0,05--0,12 kWh), nên với 5 fold chưa thể kết luận chắc chắn mô hình nào tốt nhất; chênh lệch giữa mô hình học máy và mô hình cơ sở thì rõ ràng và nhất quán ở mọi fold.
     \item MAPE của mô hình học máy vẫn cao (44--73\%) dù MAE dưới 0,51 kWh, do nhiều giờ có điện năng rất nhỏ. Điều này khớp với lý do không dùng MAPE làm chỉ số chính.
 \end{enumerate}
@@ -104,8 +104,8 @@ Hình~\ref{fig:mae_fold} cho thấy thứ hạng các mô hình gần như giữ
 
 Bảng~\ref{tab:train_val} và Hình~\ref{fig:train_val} cho thấy hai hành vi khác nhau:
 \begin{itemize}
-    \item \textbf{Random Forest và XGBoost} có MAE huấn luyện chỉ 0,24--0,34 kWh trong khi MAE kiểm định là 0,37--0,51 kWh (gấp 1,4--1,6 lần), và khoảng cách này xuất hiện ở mọi fold. Đây là \textbf{dấu hiệu} quá khớp. Tuy nhiên sai số huấn luyện ở đây là sai số trong mẫu, vốn luôn thấp với mô hình cây (mỗi lá của Random Forest chỉ cần 5 mẫu), nên cần kiểm chứng thêm bằng đường cong học tập và đường cong kiểm định ở giai đoạn tối ưu hóa.
-    \item \textbf{Linear Regression} có sai số huấn luyện (0,41--0,55 kWh) xấp xỉ sai số kiểm định và cao hơn hẳn sai số huấn luyện của mô hình cây, tức mô hình \textbf{chưa khớp}: quan hệ tuyến tính không biểu diễn được tương tác giữa lịch và mức tiêu thụ gần đây. Sai số huấn luyện còn hơi lớn hơn sai số kiểm định vì phần huấn luyện chứa các mùa đông 2006--2008 tiêu thụ cao.
+    \item Random Forest và XGBoost có MAE huấn luyện chỉ 0,24--0,34 kWh trong khi MAE kiểm định là 0,37--0,51 kWh (gấp 1,4--1,6 lần), và khoảng cách này xuất hiện ở mọi fold. Đây là dấu hiệu quá khớp. Tuy nhiên sai số huấn luyện ở đây là sai số trong mẫu, vốn luôn thấp với mô hình cây (mỗi lá của Random Forest chỉ cần 5 mẫu), nên cần kiểm chứng thêm bằng đường cong học tập và đường cong kiểm định ở giai đoạn tối ưu hóa.
+    \item Linear Regression có sai số huấn luyện (0,41--0,55 kWh) xấp xỉ sai số kiểm định và cao hơn hẳn sai số huấn luyện của mô hình cây, tức mô hình chưa khớp: quan hệ tuyến tính không biểu diễn được tương tác giữa lịch và mức tiêu thụ gần đây. Sai số huấn luyện còn hơi lớn hơn sai số kiểm định vì phần huấn luyện chứa các mùa đông 2006--2008 tiêu thụ cao.
 \end{itemize}
 
 \section{Phân tích lỗi}
@@ -140,7 +140,7 @@ Phân tích dùng dự báo của mọi mô hình trên phần kiểm định c�
 
 \input{tables/tab_error_conc}
 
-\paragraph{Phần dư và giờ đỉnh (Hình~\ref{fig:residuals}, Bảng~\ref{tab:error_conc}).} Các điểm ở vùng điện năng cao nằm dưới đường chéo: mô hình \textbf{dự báo thấp các giờ đỉnh}; ở $h = 24$ dự báo bị kéo về giá trị trung bình nhiều hơn. Phân bố phần dư lệch phải (skew 1,09 và 1,13): phần lớn giờ có phần dư âm nhỏ (dự báo hơi cao ở giờ tải nền, trung vị $-0{,}074$ và $-0{,}128$ kWh), xen với một số ít giờ có phần dư dương rất lớn. Ở 5\% giờ tiêu thụ cao nhất (từ 2,81 kWh), mô hình dự báo thấp trung bình 1,06--1,15 kWh với $h = 1$ và 1,44--1,63 kWh với $h = 24$; 10\% số giờ có sai số lớn nhất chiếm 30,6--34,5\% tổng sai số tuyệt đối. Trung bình phần dư gần 0 ($-0{,}02$ và $-0{,}04$ kWh), nên mô hình gần như không lệch hệ thống; sai số chủ yếu đến từ việc không đoán được thời điểm và độ lớn của đỉnh, vốn phụ thuộc vào hành vi khó đoán như bật nhiều thiết bị cùng lúc.
+\paragraph{Phần dư và giờ đỉnh (Hình~\ref{fig:residuals}, Bảng~\ref{tab:error_conc}).} Các điểm ở vùng điện năng cao nằm dưới đường chéo: mô hình dự báo thấp các giờ đỉnh; ở $h = 24$ dự báo bị kéo về giá trị trung bình nhiều hơn. Phân bố phần dư lệch phải (skew 1,09 và 1,13): phần lớn giờ có phần dư âm nhỏ (dự báo hơi cao ở giờ tải nền, trung vị $-0{,}074$ và $-0{,}128$ kWh), xen với một số ít giờ có phần dư dương rất lớn. Ở 5\% giờ tiêu thụ cao nhất (từ 2,81 kWh), mô hình dự báo thấp trung bình 1,06--1,15 kWh với $h = 1$ và 1,44--1,63 kWh với $h = 24$; 10\% số giờ có sai số lớn nhất chiếm 30,6--34,5\% tổng sai số tuyệt đối. Trung bình phần dư gần 0 ($-0{,}02$ và $-0{,}04$ kWh), nên mô hình gần như không lệch hệ thống; sai số chủ yếu đến từ việc không đoán được thời điểm và độ lớn của đỉnh, vốn phụ thuộc vào hành vi khó đoán như bật nhiều thiết bị cùng lúc.
 
 \begin{figure}[htbp]
     \centering
@@ -163,10 +163,10 @@ Phân tích dùng dự báo của mọi mô hình trên phần kiểm định c�
 
 Hình~\ref{fig:importance} cho thấy cơ chế dự báo thay đổi theo tầm dự báo:
 \begin{itemize}
-    \item \textbf{$h = 1$:} thông tin về vài giờ vừa qua áp đảo. Với hai mô hình cây, hoán vị \code{lag_0} làm MAE tăng 0,35--0,37 kWh; Linear Regression chia tầm quan trọng này giữa \code{lag_0} (0,25) và \code{roll_mean_3} (0,16) vì trung bình 3 giờ gần nhất chứa chính $y_t$. Tiếp theo là giờ trong ngày (0,05--0,08).
-    \item \textbf{$h = 24$:} giờ trong ngày trở thành quan trọng nhất (0,12--0,18 kWh), tiếp theo là \code{same_hour_prev_week} (0,02--0,05) và ngày trong tuần. Mô hình chủ yếu học hồ sơ tiêu thụ theo giờ và thứ, cộng với giá trị cùng giờ tuần trước.
+    \item $h = 1$: thông tin về vài giờ vừa qua áp đảo. Với hai mô hình cây, hoán vị $y_t$ (điện năng giờ vừa qua) làm MAE tăng 0,35--0,37 kWh; Linear Regression chia tầm quan trọng này giữa $y_t$ (0,25) và trung bình 3 giờ gần nhất (0,16), vì trung bình này chứa chính $y_t$. Tiếp theo là giờ trong ngày (0,05--0,08).
+    \item $h = 24$: giờ trong ngày trở thành quan trọng nhất (0,12--0,18 kWh), tiếp theo là giá trị cùng giờ tuần trước $y_{t+h-168}$ (0,02--0,05) và ngày trong tuần. Mô hình chủ yếu học hồ sơ tiêu thụ theo giờ và thứ, cộng với giá trị cùng giờ tuần trước.
 \end{itemize}
-Các đặc trưng tương quan với nhau chia sẻ tầm quan trọng; ví dụ ở $h = 24$, \code{lag_0} và \code{same_hour_prev_day} là cùng một giá trị $y_t$. Kết quả này khớp với nhận xét ở Mục~\ref{sec:correlation}: tự tương quan bậc 1 cao quyết định dự báo ngắn hạn, còn chu kỳ ngày và tuần quyết định dự báo xa hơn.
+Các đặc trưng tương quan với nhau chia sẻ tầm quan trọng; ví dụ ở $h = 24$, $y_t$ và giá trị cùng giờ ngày trước $y_{t+h-24}$ là cùng một giá trị. Kết quả này khớp với nhận xét ở Mục~\ref{sec:correlation}: tự tương quan bậc 1 cao quyết định dự báo ngắn hạn, còn chu kỳ ngày và tuần quyết định dự báo xa hơn.
 
 \section{Thảo luận}
 \label{sec:discussion}

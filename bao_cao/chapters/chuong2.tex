@@ -1,7 +1,7 @@
 \chapter{BÀI TOÁN, DỮ LIỆU VÀ TIỀN XỬ LÝ}
 \label{chap:data}
 
-Chương này phát biểu bài toán học máy của đề tài, mô tả bộ dữ liệu, trình bày kết quả khảo sát dữ liệu, các vấn đề chất lượng dữ liệu cùng cách xử lý, và quy trình chuẩn bị dữ liệu cho mô hình. Số liệu trong chương được lấy từ kết quả chạy của notebook \code{01_eda.ipynb} và \code{02_chuan_bi_du_lieu.ipynb}.
+Chương này phát biểu bài toán học máy của đề tài, mô tả bộ dữ liệu, trình bày kết quả khảo sát dữ liệu, các vấn đề chất lượng dữ liệu cùng cách xử lý, và quy trình chuẩn bị dữ liệu cho mô hình.
 
 \section{Phát biểu bài toán}
 \label{sec:problem}
@@ -17,7 +17,7 @@ Chương này phát biểu bài toán học máy của đề tài, mô tả bộ
     \begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}X|}
         \hline
         \textbf{Thành phần} & \textbf{Nội dung} \\ \hline
-        Loại bài toán & Học có giám sát, \textbf{hồi quy}: đầu ra là một số thực liên tục. \\ \hline
+        Loại bài toán & Học có giám sát, hồi quy: đầu ra là một số thực liên tục. \\ \hline
         Đơn vị mẫu & Một cặp (thời điểm gốc $t$ theo giờ, tầm dự báo $h$). Ví dụ: lúc 20:00 ngày 03/02/2009 dùng dữ liệu đến 20:00 để dự báo điện năng của giờ 21:00 ($h = 1$). \\ \hline
         Đầu ra & $y_{t+h}$: điện năng tiêu thụ trong giờ $t+h$ (kWh), tính từ công suất đo theo phút (Mục~\ref{sec:label}). \\ \hline
         Đầu vào & Chỉ gồm thông tin biết được tại $t$: điện năng các giờ trước, thống kê cửa sổ trượt và lịch của thời điểm mục tiêu (21 đặc trưng, Mục~\ref{sec:features}). \\ \hline
@@ -37,10 +37,10 @@ Bảng~\ref{tab:objectives} chuyển mục tiêu thực tế thành mục tiêu 
     \begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}p{3.6cm}|>{\raggedright\arraybackslash}p{3.8cm}|>{\raggedright\arraybackslash}X|}
         \hline
         \textbf{Mục tiêu thực tế} & \textbf{Mục tiêu học máy} & \textbf{Chỉ số và mức kết quả} \\ \hline
-        Biết trước mức tiêu thụ trong 1--24 giờ tới & Dự báo $y_{t+h}$ với sai số tuyệt đối nhỏ & \textbf{Chỉ số chính: MAE} (kWh). Mức tham chiếu: MAE của mô hình cơ sở tốt nhất trên kiểm định chéo. Mức mong muốn (nhóm tự đặt): giảm ít nhất 10\% so với mức tham chiếu ở mọi $h$. \\ \hline
-        Không bỏ sót giờ cao điểm & Hạn chế sai số lớn & \textbf{RMSE} (phạt nặng sai số lớn); phân tích sai số theo giờ trong ngày. \\ \hline
-        Dễ trình bày cho người dùng & Có thước đo tương đối & \textbf{MAPE}, chỉ để tham khảo vì nhiều giờ có điện năng rất nhỏ. \\ \hline
-        Kết quả tin cậy & Đánh giá không rò rỉ, đủ ổn định & Trung bình $\pm$ độ lệch chuẩn qua 5 fold \code{TimeSeriesSplit}; tập kiểm tra chỉ dùng một lần ở cuối. \\ \hline
+        Biết trước mức tiêu thụ trong 1--24 giờ tới & Dự báo $y_{t+h}$ với sai số tuyệt đối nhỏ & Chỉ số chính: MAE (kWh). Mức tham chiếu: MAE của mô hình cơ sở tốt nhất trên kiểm định chéo. Mức mong muốn (nhóm tự đặt): giảm ít nhất 10\% so với mức tham chiếu ở mọi $h$. \\ \hline
+        Không bỏ sót giờ cao điểm & Hạn chế sai số lớn & RMSE (phạt nặng sai số lớn); phân tích sai số theo giờ trong ngày. \\ \hline
+        Dễ trình bày cho người dùng & Có thước đo tương đối & MAPE, chỉ để tham khảo vì nhiều giờ có điện năng rất nhỏ. \\ \hline
+        Kết quả tin cậy & Đánh giá không rò rỉ, đủ ổn định & Trung bình $\pm$ độ lệch chuẩn qua 5 fold TimeSeriesSplit; tập kiểm tra chỉ dùng một lần ở cuối. \\ \hline
     \end{tabularx}
 \end{table}
 
@@ -90,7 +90,7 @@ Bảng~\ref{tab:dictionary} mô tả các cột của dữ liệu gốc. Ý ngh�
     \end{tabularx}
 \end{table}
 
-Khi đọc tệp gốc mà không khai báo giá trị thiếu, sáu cột số từ \code{Global_active_power} đến \code{Sub_metering_2} bị đọc thành chuỗi vì chứa ký tự ``?'' (tổng cộng 155.874 ký tự); riêng \code{Sub_metering_3} để trống ô nên vẫn là số. Nhóm đọc lại dữ liệu với \code{na_values=["?", ""]}, ép kiểu số thực và ghép hai cột thời gian thành chỉ mục.
+Khi đọc tệp gốc mà không khai báo giá trị thiếu, sáu cột số từ \code{Global_active_power} đến \code{Sub_metering_2} bị đọc thành chuỗi vì chứa ký tự ``?'' (tổng cộng 155.874 ký tự); riêng \code{Sub_metering_3} để trống ô nên vẫn là số. Nhóm đọc lại dữ liệu, khai báo ``?'' và ô trống là giá trị thiếu, ép kiểu số thực và ghép hai cột thời gian thành chỉ mục.
 
 \section{Khảo sát dữ liệu}
 \label{sec:eda}
@@ -140,7 +140,7 @@ Trong Hình~\ref{fig:seven}, công suất tác dụng và cường độ dòng �
 
 \subsection{Nhãn và phân bố nhãn}
 \label{sec:label}
-Nhãn \code{energy_kwh} của một giờ bằng trung bình công suất các phút có đo trong giờ nhân với 1 giờ:
+Nhãn (điện năng) của một giờ bằng trung bình công suất các phút có đo trong giờ nhân với 1 giờ:
 \begin{equation}
     E_{\text{giờ}}\ [\text{kWh}] = \frac{1}{n}\sum_{i=1}^{n} P_i\ [\text{kW}] \times 1\ \text{h},
     \label{eq:energy}
@@ -156,10 +156,10 @@ chỉ tính khi giờ đó có ít nhất 54/60 phút đo; giờ thiếu nhiều
 
 Hình~\ref{fig:label} cho thấy bốn đặc điểm của nhãn:
 \begin{itemize}
-    \item \textbf{Hai đỉnh:} đỉnh chính ở vùng tải nền khoảng 0,23 kWh và đỉnh thứ hai quanh 1,4 kWh.
-    \item \textbf{Chu kỳ ngày:} trung vị thấp nhất lúc 3--4 giờ sáng (0,315 kWh), cao nhất lúc 20 giờ (1,904 kWh); khung 19--21 giờ có độ lệch chuẩn lớn nhất (1,10--1,18 kWh), là khung giờ khó dự báo nhất.
-    \item \textbf{Chu kỳ tuần và mùa:} trung vị thứ Bảy (1,014) và Chủ nhật (0,904) cao hơn ngày thường (ví dụ thứ Hai 0,665 kWh); tháng 12 cao nhất (1,398 kWh), tháng 8 thấp bất thường (0,289 kWh).
-    \item \textbf{Đuôi phải:} chỉ 2,26\% số giờ vượt râu trên 3,494 kWh. Đây là bài toán hồi quy nên không áp dụng cân bằng lớp, nhưng cần theo dõi sai số riêng ở các giờ đỉnh.
+    \item Hai đỉnh: đỉnh chính ở vùng tải nền khoảng 0,23 kWh và đỉnh thứ hai quanh 1,4 kWh.
+    \item Chu kỳ ngày: trung vị thấp nhất lúc 3--4 giờ sáng (0,315 kWh), cao nhất lúc 20 giờ (1,904 kWh); khung 19--21 giờ có độ lệch chuẩn lớn nhất (1,10--1,18 kWh), là khung giờ khó dự báo nhất.
+    \item Chu kỳ tuần và mùa: trung vị thứ Bảy (1,014) và Chủ nhật (0,904) cao hơn ngày thường (ví dụ thứ Hai 0,665 kWh); tháng 12 cao nhất (1,398 kWh), tháng 8 thấp bất thường (0,289 kWh).
+    \item Đuôi phải: chỉ 2,26\% số giờ vượt râu trên 3,494 kWh. Đây là bài toán hồi quy nên không áp dụng cân bằng lớp, nhưng cần theo dõi sai số riêng ở các giờ đỉnh.
 \end{itemize}
 
 \subsection{Quan hệ giữa các biến và với nhãn}
@@ -181,10 +181,10 @@ Hình~\ref{fig:label} cho thấy bốn đặc điểm của nhãn:
 
 Từ Hình~\ref{fig:corr} và Hình~\ref{fig:acf}, nhóm rút ra bốn nhận xét có ý nghĩa cho việc xây dựng mô hình:
 \begin{enumerate}
-    \item \textbf{Rò rỉ qua cường độ dòng điện.} Tương quan giữa \code{Global_intensity} và nhãn là 0,999 (Pearson) và 0,998 (Spearman), vì công suất xấp xỉ bằng điện áp nhân cường độ. Đại lượng này đo cùng lúc với nhãn nên không có tại thời điểm dự báo; nhóm loại nó, cùng với \code{Voltage} của thời điểm mục tiêu.
-    \item \textbf{Tương quan giảm nhanh rồi tăng lại theo chu kỳ.} Tự tương quan giảm từ 0,719 ở độ trễ 1 xuống 0,023 ở độ trễ 6, rồi tăng lại ở 24 giờ (0,433) và 168 giờ (0,465). Vì vậy với $h \ge 6$, thông tin chủ yếu đến từ giá trị cùng giờ ngày trước và tuần trước của thời điểm mục tiêu, không phải từ các giờ gần nhất.
-    \item \textbf{Quan hệ giữa giờ trong ngày và nhãn không đơn điệu} (thấp ban đêm, tăng buổi sáng, đỉnh buổi tối). Mô hình tuyến tính cần mã hóa one-hot cho giờ; mô hình cây có thể tự học quan hệ này.
-    \item \textbf{Nhóm công tơ phụ và điện áp.} \code{Sub_metering_3} tương quan cao nhất với nhãn trong ba nhóm (0,687) nhưng là giá trị cùng thời điểm, nên chỉ có thể dùng giá trị trễ của nó. Điện áp tương quan âm với nhãn ($-0{,}375$): giờ tiêu thụ cao thường có điện áp thấp hơn.
+    \item Rò rỉ qua cường độ dòng điện. Tương quan giữa \code{Global_intensity} và nhãn là 0,999 (Pearson) và 0,998 (Spearman), vì công suất xấp xỉ bằng điện áp nhân cường độ. Đại lượng này đo cùng lúc với nhãn nên không có tại thời điểm dự báo; nhóm loại nó, cùng với \code{Voltage} của thời điểm mục tiêu.
+    \item Tương quan giảm nhanh rồi tăng lại theo chu kỳ. Tự tương quan giảm từ 0,719 ở độ trễ 1 xuống 0,023 ở độ trễ 6, rồi tăng lại ở 24 giờ (0,433) và 168 giờ (0,465). Vì vậy với $h \ge 6$, thông tin chủ yếu đến từ giá trị cùng giờ ngày trước và tuần trước của thời điểm mục tiêu, không phải từ các giờ gần nhất.
+    \item Quan hệ giữa giờ trong ngày và nhãn không đơn điệu (thấp ban đêm, tăng buổi sáng, đỉnh buổi tối). Mô hình tuyến tính cần mã hóa one-hot cho giờ; mô hình cây có thể tự học quan hệ này.
+    \item Nhóm công tơ phụ và điện áp. \code{Sub_metering_3} tương quan cao nhất với nhãn trong ba nhóm (0,687) nhưng là giá trị cùng thời điểm, nên chỉ có thể dùng giá trị trễ của nó. Điện áp tương quan âm với nhãn ($-0{,}375$): giờ tiêu thụ cao thường có điện áp thấp hơn.
 \end{enumerate}
 
 \subsection{Tính mùa vụ theo ngày}
@@ -246,7 +246,7 @@ Bảng~\ref{tab:treatment} nêu cách xử lý từng vấn đề và lý do l�
         \textbf{Vấn đề} & \textbf{Cách xử lý} & \textbf{Lý do} \\ \hline
         Ký tự ``?'' & Đọc là giá trị thiếu, ép kiểu số thực & ``?'' là ký hiệu thiếu của nguồn; không thay bằng 0 vì hộ luôn có tải nền. \\ \hline
         Thiếu ở nhãn & Tổng hợp theo giờ; giờ có dưới 54 phút đo để NaN; không nội suy, không xóa dòng & Nội suy qua khối thiếu dài tới 5 ngày sẽ tạo nhãn giả từ dữ liệu sau khối. Giữ NaN trên lưới giờ để phép dịch $k$ dòng luôn đúng $k$ giờ. \\ \hline
-        Thiếu ở đặc trưng & Điền trung vị trong \code{Pipeline}, chỉ học trên tập huấn luyện & Trung vị ít bị kéo bởi giờ đỉnh hơn trung bình khi phân bố lệch phải. \\ \hline
+        Thiếu ở đặc trưng & Điền trung vị trong Pipeline, chỉ học trên tập huấn luyện & Trung vị ít bị kéo bởi giờ đỉnh hơn trung bình khi phân bố lệch phải. \\ \hline
         Ngoại lai & Giữ nguyên & Không có giá trị âm hay vượt ngưỡng vật lý; giờ tiêu thụ cao là đối tượng cần dự báo. \\ \hline
         Rò rỉ & Loại \code{Global_intensity}, \code{Voltage} của thời điểm mục tiêu & Không biết được tại thời điểm dự báo. \\ \hline
         Mất cân bằng & Không sinh mẫu nhân tạo & Sinh mẫu phá vỡ cấu trúc thời gian; thay bằng phân tích sai số theo giờ và theo dải giá trị. \\ \hline
@@ -288,10 +288,10 @@ Bảng~\ref{tab:before_after} và Hình~\ref{fig:before_after} cho thấy trung 
 \label{sec:preparation}
 
 \subsection{Chia dữ liệu theo thời gian}
-Dữ liệu được chia theo \textbf{thời điểm mục tiêu} $t+h$, không xáo trộn: mẫu có nhãn trước 01/01/2010 thuộc tập huấn luyện, từ 01/01/2010 thuộc tập kiểm tra. Chia theo thời điểm mục tiêu (thay vì thời điểm gốc) bảo đảm không có nhãn nào của năm 2010 lọt vào tập huấn luyện, kể cả khi $h = 24$. Với $h = 1$, tập huấn luyện có 26.523 mẫu (nhãn từ 16/12/2006 đến 31/12/2009, 77,7\%) và tập kiểm tra có 7.620 mẫu (từ 01/01/2010 đến 26/11/2010, 22,3\%). Tập kiểm tra được giữ riêng: không dùng để khảo sát, chọn đặc trưng hay chọn mô hình.
+Dữ liệu được chia theo thời điểm mục tiêu $t+h$, không xáo trộn: mẫu có nhãn trước 01/01/2010 thuộc tập huấn luyện, từ 01/01/2010 thuộc tập kiểm tra. Chia theo thời điểm mục tiêu (thay vì thời điểm gốc) bảo đảm không có nhãn nào của năm 2010 lọt vào tập huấn luyện, kể cả khi $h = 24$. Với $h = 1$, tập huấn luyện có 26.523 mẫu (nhãn từ 16/12/2006 đến 31/12/2009, 77,7\%) và tập kiểm tra có 7.620 mẫu (từ 01/01/2010 đến 26/11/2010, 22,3\%). Tập kiểm tra được giữ riêng: không dùng để khảo sát, chọn đặc trưng hay chọn mô hình.
 
 \subsection{Kiểm định chéo theo thời gian}
-Trên tập huấn luyện, nhóm dùng \code{TimeSeriesSplit} với 5 fold, mỗi fold kiểm định dài 2.160 giờ (90 ngày) và khoảng đệm 168 mẫu (một tuần) giữa phần huấn luyện và phần kiểm định~\cite{sklearn2026tss}.
+Trên tập huấn luyện, nhóm dùng TimeSeriesSplit với 5 fold, mỗi fold kiểm định dài 2.160 giờ (90 ngày) và khoảng đệm 168 mẫu (một tuần) giữa phần huấn luyện và phần kiểm định~\cite{sklearn2026tss}.
 
 \begin{table}[htbp]
     \centering
@@ -312,20 +312,20 @@ Trên tập huấn luyện, nhóm dùng \code{TimeSeriesSplit} với 5 fold, m�
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{figures/nb02_fold.pdf}
-    \caption{Sơ đồ 5 fold \code{TimeSeriesSplit} và tập kiểm tra; trục hoành là chỉ số mẫu.}
+    \caption{Sơ đồ 5 fold TimeSeriesSplit và tập kiểm tra; trục hoành là chỉ số mẫu.}
     \label{fig:folds}
 \end{figure}
 
 Như Bảng~\ref{tab:folds} và Hình~\ref{fig:folds}, các fold kiểm định có cùng kích thước, nối tiếp và không chồng nhau; phần huấn luyện mở rộng thêm 2.160 mẫu mỗi fold. Khoảng đệm bảo đảm nhãn của các mẫu huấn luyện cuối cùng không trùng khoảng thời gian với nhãn của các mẫu kiểm định đầu tiên khi $h \le 24$, đồng thời giảm phụ thuộc do tự tương quan giữa hai phần. Các fold kiểm định rơi vào các mùa khác nhau, nên chênh lệch sai số giữa các fold phản ánh cả mùa vụ; kết quả vì vậy được báo cáo bằng trung bình $\pm$ độ lệch chuẩn qua 5 fold.
 
 \subsection{Đường ống tiền xử lý}
-Các bước tiền xử lý được gói trong \code{ColumnTransformer}/\code{Pipeline} của scikit-learn~\cite{pedregosa2011scikit}: biến giờ trong ngày được mã hóa one-hot, các đặc trưng số được điền khuyết bằng trung vị rồi chuẩn hóa z-score. Đường ống chỉ được \code{fit} trên dữ liệu huấn luyện; với $h = 1$, giá trị học được cho \code{lag_0} là trung vị 0,7939, trung bình 1,1002 và độ lệch chuẩn 0,9278 kWh.
+Các bước tiền xử lý được tổ chức thành một Pipeline của thư viện scikit-learn~\cite{pedregosa2011scikit}: biến giờ trong ngày được mã hóa one-hot, các đặc trưng số được điền khuyết bằng trung vị rồi chuẩn hóa z-score. Đường ống chỉ được khớp (fit) trên dữ liệu huấn luyện; với $h = 1$, giá trị học được cho đặc trưng $y_t$ là trung vị 0,7939, trung bình 1,1002 và độ lệch chuẩn 0,9278 kWh.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{figures/nb02_chuan_hoa.pdf}
-    \caption{Phân bố \code{lag_0} trên tập huấn luyện trước và sau tiền xử lý.}
+    \caption{Phân bố của đặc trưng $y_t$ trên tập huấn luyện trước và sau tiền xử lý.}
     \label{fig:scaling}
 \end{figure}
 
-Sau tiền xử lý, số giá trị thiếu ở cả hai tập về 0. Trên tập huấn luyện, các đặc trưng số có trung bình 0 và độ lệch chuẩn 1; trên tập kiểm tra, trung bình khoảng $-0{,}04$ và độ lệch chuẩn khoảng 0,84, vì năm 2010 tiêu thụ thấp và ít biến động hơn giai đoạn huấn luyện. Điều này cho thấy tập kiểm tra không bị dùng để học tham số chuẩn hóa. Hình~\ref{fig:scaling} cho thấy chuẩn hóa chỉ dịch và co giãn trục, không đổi hình dạng phân bố. Để minh họa rò rỉ, nhóm so sánh với cách \code{fit} trên toàn bộ dữ liệu: trung bình học được của \code{lag_0} giảm từ 1,1004 xuống 1,0916 và độ lệch chuẩn giảm khoảng 0,03, tức thông tin của năm 2010 đã lọt vào tham số chuẩn hóa.
+Sau tiền xử lý, số giá trị thiếu ở cả hai tập về 0. Trên tập huấn luyện, các đặc trưng số có trung bình 0 và độ lệch chuẩn 1; trên tập kiểm tra, trung bình khoảng $-0{,}04$ và độ lệch chuẩn khoảng 0,84, vì năm 2010 tiêu thụ thấp và ít biến động hơn giai đoạn huấn luyện. Điều này cho thấy tập kiểm tra không bị dùng để học tham số chuẩn hóa. Hình~\ref{fig:scaling} cho thấy chuẩn hóa chỉ dịch và co giãn trục, không đổi hình dạng phân bố. Để minh họa rò rỉ, nhóm so sánh với cách khớp trên toàn bộ dữ liệu: trung bình học được của $y_t$ giảm từ 1,1004 xuống 1,0916 và độ lệch chuẩn giảm khoảng 0,03, tức thông tin của năm 2010 đã lọt vào tham số chuẩn hóa.

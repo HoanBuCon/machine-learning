@@ -318,7 +318,7 @@
 \newcommand{\coverrow}[3][c]{%
   \noindent\parbox[t][#2][#1]{\textwidth}{#3}\par\nointerlineskip}
 \newcommand{\coverlabel}[2]{%
-  \noindent\hspace*{3cm}\makebox[4.75cm][l]{#1}#2\par}
+  \noindent\hspace*{2.5cm}\makebox[5.5cm][l]{#1}#2\par}
 
 \newcommand{\makecoverpage}{%
   \begin{titlepage}
@@ -330,13 +330,13 @@
     \coverrow{0.2cm}{}%
     \coverrow[t]{1.4cm}{\centering\fontsize{13}{17}\selectfont
        TRƯỜNG ĐẠI HỌC CÔNG NGHỆ THÔNG TIN VÀ TRUYỀN THÔNG\par
-       \textbf{KHOA CÔNG NGHỆ THÔNG TIN}\par\vspace{2pt}\rule{7cm}{0.5pt}\par}%
+       \textbf{KHOA CÔNG NGHỆ THÔNG TIN}\par\vspace{-7pt}\rule{7cm}{0.5pt}\par}%
     \coverrow{0.6cm}{}%
     \coverrow{4.0cm}{\centering\includegraphics[width=4cm,height=4cm,keepaspectratio]{\logoPath}\par}%
     \coverrow{0.8cm}{}%
     \coverrow{2.5cm}{\centering
        {\fontsize{24}{30}\selectfont\bfseries BÁO CÁO DỰ ÁN\par}
-       {\fontsize{19}{25}\selectfont\bfseries HỌC PHẦN HỌC MÁY (MACHINE LEARNING)\par}}%
+       {\fontsize{19}{25}\selectfont\bfseries HỌC PHẦN HỌC MÁY\par}}%
     \coverrow{1.0cm}{}%
     \coverrow[t]{0.8cm}{\hspace*{1cm}\fontsize{13}{16}\selectfont\bfseries Đề tài:\par}%
     \coverrow{3.0cm}{\centering\fontsize{16}{24}\selectfont\bfseries \coverTitle\par}%
@@ -347,7 +347,7 @@
        \coverlabel{Sinh viên thực hiện:}{\memberOne}
        \coverlabel{}{\memberTwo}
        \coverlabel{Lớp:}{\className}}%
-    \coverrow[t]{1.0cm}{\fontsize{14}{21}\selectfont\bfseries\coverlabel{Giáo viên hướng dẫn:}{\instructorName}}%
+    \coverrow[t]{1.0cm}{\fontsize{14}{21}\selectfont\bfseries\coverlabel{Giảng viên hướng dẫn:}{\instructorName}}%
     \vfill
     {\centering\fontsize{14}{17}\selectfont\bfseries THÁI NGUYÊN, NĂM \reportYear\par}
     \vspace*{0.3cm}

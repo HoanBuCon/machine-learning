@@ -28,11 +28,8 @@ def tab_cv_summary():
     rows = []
     for h in sorted(s.h.unique()):
         d = s[s.h == h].set_index("model").loc[ORDER]
-        best = d["MAE_mean"].idxmin()
         for i, (m, r) in enumerate(d.iterrows()):
             mae = f"{num(r.MAE_mean)} $\\pm$ {num(r.MAE_std)}"
-            if m == best:
-                mae = f"\\textbf{{{mae}}}"
             hcol = f"\\multirow{{7}}{{*}}{{{h}}}" if i == 0 else ""
             rows.append(f"{hcol} & {m} & {mae} & {num(r.RMSE_mean)} $\\pm$ {num(r.RMSE_std)} & "
                         f"{num(r.MAPE_mean, 1)} $\\pm$ {num(r.MAPE_std, 1)} \\\\")
@@ -40,7 +37,7 @@ def tab_cv_summary():
     body = "\n".join(rows)
     write("tab_cv_summary.tex", rf"""\begin{{table}}[htbp]
 \centering
-\caption[Kết quả kiểm định chéo của mọi mô hình]{{Kết quả kiểm định chéo 5 fold trên tập huấn luyện (trung bình $\pm$ độ lệch chuẩn qua các fold). In đậm: MAE thấp nhất ở mỗi tầm dự báo.}}
+\caption[Kết quả kiểm định chéo của mọi mô hình]{{Kết quả kiểm định chéo 5 fold trên tập huấn luyện (trung bình $\pm$ độ lệch chuẩn qua các fold).}}
 \label{{tab:cv_summary}}
 \small
 \begin{{tabular}}{{|c|l|c|c|c|}}

@@ -25,7 +25,8 @@
 }
 
 % Macro tiện ích
-\DeclareRobustCommand{\code}[1]{\texttt{\detokenize{#1}}}
+% Tên cột dữ liệu gốc: in bằng phông chữ thân bài, chỉ giữ nguyên cách viết của nguồn dữ liệu
+\DeclareRobustCommand{\code}[1]{\textrm{\detokenize{#1}}}
 \usepackage{float}
 \usepackage{bm}
 \DeclareMathOperator*{\argmin}{arg\,min}

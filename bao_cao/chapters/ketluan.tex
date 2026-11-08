@@ -4,9 +4,9 @@
 \plainheading{1. Kết quả đạt được}
 Đến giai đoạn hiện tại, nhóm đã hoàn thành hai phần đầu của quy trình học máy cho bài toán dự báo điện năng tiêu thụ theo giờ của hộ gia đình:
 \begin{itemize}
-    \item \textbf{Bài toán và dữ liệu:} phát biểu bài toán hồi quy với đơn vị mẫu, đầu vào, đầu ra và tầm dự báo cụ thể; chọn MAE làm chỉ số chính; lập từ điển dữ liệu; khảo sát phân bố, tương quan, tự tương quan và tính mùa vụ theo giờ, ngày, tháng.
-    \item \textbf{Chất lượng và chuẩn bị dữ liệu:} định lượng các vấn đề chất lượng, nổi bật là 25.979 phút thiếu tập trung thành 71 khối; tổng hợp nhãn theo giờ không nội suy; chia dữ liệu theo thời điểm mục tiêu; kiểm định chéo \code{TimeSeriesSplit} có khoảng đệm; đường ống tiền xử lý chỉ học trên tập huấn luyện.
-    \item \textbf{Mô hình:} trên kiểm định chéo 5 fold, cả ba mô hình Linear Regression, Random Forest và XGBoost đều vượt mọi mô hình cơ sở ở cả bốn tầm dự báo và ở mọi fold, giảm MAE 12,7--20,0\% so với mô hình cơ sở tốt nhất. Random Forest có MAE thấp nhất (0,365 kWh ở $h = 1$; 0,482--0,495 kWh ở $h \ge 6$). Quy trình chạy lại được từ đầu trong môi trường mới và cho kết quả trùng khớp.
+    \item Bài toán và dữ liệu: phát biểu bài toán hồi quy với đơn vị mẫu, đầu vào, đầu ra và tầm dự báo cụ thể; chọn MAE làm chỉ số chính; lập từ điển dữ liệu; khảo sát phân bố, tương quan, tự tương quan và tính mùa vụ theo giờ, ngày, tháng.
+    \item Chất lượng và chuẩn bị dữ liệu: định lượng các vấn đề chất lượng, nổi bật là 25.979 phút thiếu tập trung thành 71 khối; tổng hợp nhãn theo giờ không nội suy; chia dữ liệu theo thời điểm mục tiêu; kiểm định chéo TimeSeriesSplit có khoảng đệm; đường ống tiền xử lý chỉ học trên tập huấn luyện.
+    \item Mô hình: trên kiểm định chéo 5 fold, cả ba mô hình Linear Regression, Random Forest và XGBoost đều vượt mọi mô hình cơ sở ở cả bốn tầm dự báo và ở mọi fold, giảm MAE 12,7--20,0\% so với mô hình cơ sở tốt nhất. Random Forest có MAE thấp nhất (0,365 kWh ở $h = 1$; 0,482--0,495 kWh ở $h \ge 6$). Quy trình chạy lại được từ đầu trong môi trường mới và cho kết quả trùng khớp.
 \end{itemize}
 
 \plainheading{2. Hạn chế}
