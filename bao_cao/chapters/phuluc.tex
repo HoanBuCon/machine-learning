@@ -1,0 +1,47 @@
+\appendix
+\addtocontents{toc}{\protect\renewcommand*{\protect\chaptername}{PHỤ LỤC}}
+\chapter{MÃ NGUỒN VÀ TÁI LẬP}
+\label{app:code}
+
+\section{Tổ chức mã nguồn}
+Mã nguồn được lưu tại kho \url{https://github.com/HoanBuCon/machine-learning} và tổ chức như sau:
+\begin{itemize}
+    \item \code{notebooks/01_eda.ipynb}: tải và đọc dữ liệu, khảo sát, chất lượng dữ liệu, tạo bảng điện năng theo giờ.
+    \item \code{notebooks/02_chuan_bi_du_lieu.ipynb}: bảng có giám sát, chia theo thời gian, kiểm định chéo, đường ống tiền xử lý.
+    \item \code{notebooks/03_huan_luyen_danh_gia.ipynb}: mô hình cơ sở, mô hình học máy, kiểm định chéo, phân tích lỗi.
+    \item \code{src/features.py}, \code{src/models.py}, \code{src/evaluation.py}: mã dùng chung cho đặc trưng, mô hình và đánh giá.
+    \item \code{ket_qua/}: bảng kết quả do notebook 03 ghi ra; \code{bao_cao/}: báo cáo này, kèm script xuất hình và sinh bảng.
+\end{itemize}
+
+\section{Hướng dẫn tái lập}
+Với Python 3.11, trong thư mục gốc của kho mã:
+\begin{lstlisting}[language=bash]
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+cd notebooks
+jupyter nbconvert --to notebook --execute --inplace 01_eda.ipynb 02_chuan_bi_du_lieu.ipynb 03_huan_luyen_danh_gia.ipynb
+\end{lstlisting}
+Notebook 01 tự tải dữ liệu từ UCI (khoảng 20 MB) nếu chưa có. Mọi mô hình dùng \code{random_state = 42}.
+
+\chapter{KHAI BÁO SỬ DỤNG CÔNG CỤ TRÍ TUỆ NHÂN TẠO}
+\label{app:ai}
+
+\begingroup
+\setstretch{1.15}
+\noindent
+\begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}p{2.8cm}|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}
+\hline
+\textbf{Công cụ} & \textbf{Phạm vi sử dụng} & \textbf{Phần do nhóm thực hiện và kiểm chứng} \\ \hline
+Claude Code (Anthropic) và Codex (OpenAI) &
+- Hướng dẫn, định hướng các bước thực hiện dự án.\newline
+- Rà soát mã nguồn và nhận xét trong notebook; đề xuất và sinh một số đoạn mã.\newline
+- Tính lại độc lập để kiểm tra các con số trong nhận xét.\newline
+- Tra cứu, xác minh tài liệu tham khảo.\newline
+- Hỗ trợ soạn bản nháp báo cáo LaTeX. &
+- Chọn đề tài, bộ dữ liệu; quyết định hướng tiếp cận và cách xử lý dữ liệu.\newline
+- Viết mã notebook với sự hỗ trợ của công cụ; đọc hiểu, chỉnh sửa và quyết định giữ hay bỏ từng đoạn.\newline
+- Chạy lại toàn bộ notebook, đối chiếu số liệu trong báo cáo với kết quả chạy.\newline
+- Chỉnh sửa nội dung; chịu trách nhiệm về toàn bộ báo cáo và giải thích được mọi phần khi vấn đáp. \\ \hline
+\end{tabularx}
+\endgroup

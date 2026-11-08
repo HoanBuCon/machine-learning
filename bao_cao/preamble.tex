@@ -1,0 +1,35 @@
+% ==============================================================================
+% CẤU HÌNH BỔ SUNG: tài liệu tham khảo, liên kết, macro của đề tài
+% ==============================================================================
+
+% Tài liệu tham khảo dạng [n] (IEEE) qua BibLaTeX/Biber
+\usepackage[
+    backend=biber,
+    style=ieee,
+    sorting=none,
+    doi=true,
+    isbn=false,
+    url=true
+]{biblatex}
+\addbibresource{references.bib}
+\setlength{\bibitemsep}{3pt}
+
+% Liên kết nội bộ (không tô màu, giống bản in Word)
+\usepackage{hyperref}
+\hypersetup{
+    hidelinks,
+    pdfauthor={Trần Trọng Hoàn, Vũ Ngọc Quý},
+    pdftitle={\projectTitle},
+    pdfsubject={Báo cáo dự án học phần Học máy},
+    pdfkeywords={Học máy, dự báo chuỗi thời gian, điện năng, Random Forest, XGBoost}
+}
+
+% Macro tiện ích
+\DeclareRobustCommand{\code}[1]{\texttt{\detokenize{#1}}}
+\usepackage{float}
+\usepackage{bm}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\usepackage{xurl}
+\setcounter{biburlnumpenalty}{100}
+\setcounter{biburllcpenalty}{100}
+\setcounter{biburlucpenalty}{100}

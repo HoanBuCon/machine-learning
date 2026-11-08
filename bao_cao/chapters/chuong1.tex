@@ -1,0 +1,101 @@
+\chapter{CƠ SỞ LÝ THUYẾT}
+\label{chap:theory}
+
+Chương này trình bày các khái niệm nền tảng của học máy, cách tiếp cận bài toán dự báo chuỗi thời gian bằng hồi quy có giám sát, các mô hình được sử dụng trong đề tài và phương pháp đánh giá mô hình.
+
+\section{Tổng quan về học máy}
+\label{sec:ml_overview}
+
+\subsection{Trí tuệ nhân tạo và học máy}
+Trí tuệ nhân tạo (Artificial Intelligence) là lĩnh vực nghiên cứu và xây dựng các tác tử có khả năng tiếp nhận thông tin từ môi trường và hành động để đạt mục tiêu~\cite{russell2020artificial}. Học máy (Machine Learning) là một nhánh của trí tuệ nhân tạo, nghiên cứu các chương trình tự cải thiện hiệu năng nhờ dữ liệu thay vì được lập trình tường minh từng quy tắc. Theo Mitchell~\cite{mitchell1997machine}, một chương trình được gọi là học từ kinh nghiệm $E$ đối với lớp nhiệm vụ $T$ và thước đo hiệu năng $P$ nếu hiệu năng trên $T$, đo bằng $P$, được cải thiện nhờ $E$. Trong đề tài này, $T$ là dự báo điện năng của giờ $t+h$, $E$ là dữ liệu đo trong quá khứ và $P$ là sai số tuyệt đối trung bình trên dữ liệu mô hình chưa từng thấy.
+
+\subsection{Học có giám sát và bài toán hồi quy}
+Học máy thường được chia thành học có giám sát, học không giám sát và học tăng cường~\cite{russell2020artificial,hastie2009elements}. Trong học có giám sát, dữ liệu gồm các cặp $(\mathbf{x}_i, y_i)$ và mô hình học một ánh xạ từ đầu vào $\mathbf{x}$ đến đầu ra $y$; khi $y$ là số thực liên tục, bài toán là \textbf{hồi quy}. Mô hình được chọn bằng cách cực tiểu hóa sai số trung bình trên tập huấn luyện, có thể kèm thành phần điều chuẩn $\Omega(f)$ để hạn chế độ phức tạp~\cite{hastie2009elements}:
+\begin{equation}
+    \hat{f} = \argmin_{f \in \mathcal{F}} \; \frac{1}{N}\sum_{i=1}^{N} L\big(y_i, f(\mathbf{x}_i)\big) + \lambda\,\Omega(f),
+    \label{eq:erm}
+\end{equation}
+trong đó $L$ là hàm mất mát (ví dụ bình phương sai số) và $\lambda \ge 0$ điều khiển mức điều chuẩn.
+
+\subsection{Tổng quát hóa, quá khớp và chưa khớp}
+Mục tiêu của mô hình là dự báo tốt trên dữ liệu mới chứ không chỉ trên dữ liệu đã học. Với mất mát bình phương, sai số kỳ vọng tại một điểm được phân rã thành nhiễu không thể giảm, bình phương độ chệch (bias) và phương sai (variance) của mô hình~\cite[mục 7.3]{hastie2009elements}. Mô hình quá đơn giản có độ chệch lớn và cho sai số cao trên cả tập huấn luyện lẫn tập kiểm định (\textit{chưa khớp}). Mô hình quá phức tạp học cả nhiễu của dữ liệu huấn luyện, cho sai số huấn luyện nhỏ nhưng sai số kiểm định lớn (\textit{quá khớp}). Vì vậy dữ liệu được chia thành tập huấn luyện để học tham số, tập kiểm định (hoặc kiểm định chéo) để so sánh và lựa chọn mô hình, và tập kiểm tra chỉ dùng một lần ở cuối để ước lượng sai số trên dữ liệu mới~\cite{hastie2009elements}.
+
+\section{Dự báo chuỗi thời gian bằng hồi quy có giám sát}
+\label{sec:ts_theory}
+
+\subsection{Chuỗi thời gian và các thành phần}
+Chuỗi thời gian là dãy quan sát $\{y_t\}$ được ghi theo thứ tự thời gian, thường cách đều nhau. Hyndman và Athanasopoulos~\cite[mục 2.3]{hyndman2021fpp3} phân biệt ba dạng biến động: \textit{xu hướng} (tăng hoặc giảm dài hạn), \textit{mùa vụ} (mẫu lặp lại với chu kỳ cố định và biết trước) và \textit{chu kỳ} (dao động không có tần số cố định); một chuỗi có thể có nhiều mùa vụ cùng lúc. Khác với dữ liệu dạng bảng thông thường, các quan sát của chuỗi thời gian phụ thuộc lẫn nhau (tự tương quan), nên không được xáo trộn dữ liệu khi chia tập và mọi thông tin dùng để dự báo phải có sẵn tại thời điểm dự báo.
+
+\subsection{Chuyển bài toán dự báo về hồi quy}
+Để dùng các mô hình hồi quy thông thường, chuỗi $\{y_t\}$ được chuyển thành bảng có giám sát: mỗi dòng ứng với một thời điểm gốc $t$, đầu vào là các đặc trưng chỉ dùng thông tin đến $t$, đầu ra là $y_{t+h}$ với $h$ là tầm dự báo. Đề tài dùng ba nhóm đặc trưng:
+\begin{itemize}
+    \item \textbf{Đặc trưng trễ (lag):} các giá trị quá khứ $y_{t-k}$, đặc biệt các độ trễ ứng với chu kỳ ngày và tuần.
+    \item \textbf{Đặc trưng cửa sổ trượt (rolling window):} thống kê trên $w$ giờ gần nhất kết thúc tại $t$, ví dụ trung bình $\bar{y}^{(w)}_t = \frac{1}{w}\sum_{j=0}^{w-1} y_{t-j}$; cửa sổ không được chứa giá trị sau $t$.
+    \item \textbf{Đặc trưng lịch:} giờ trong ngày, ngày trong tuần, tháng của \textit{thời điểm mục tiêu} $t+h$; các giá trị này biết trước nên được phép dùng.
+\end{itemize}
+Khi cần dự báo nhiều tầm $h$, đề tài dùng \textit{chiến lược trực tiếp} (Direct): huấn luyện một mô hình riêng cho mỗi $h$. Ben Taieb và cộng sự~\cite{bentaieb2012review} so sánh các chiến lược dự báo nhiều bước; chiến lược trực tiếp không bị cộng dồn sai số qua các bước như chiến lược đệ quy, đổi lại phải huấn luyện nhiều mô hình.
+
+\subsection{Mô hình cơ sở}
+Mô hình cơ sở là mốc tối thiểu mà một mô hình học máy phải vượt qua. Theo Hyndman và Athanasopoulos~\cite[mục 5.2]{hyndman2021fpp3}, phương pháp \textit{naive} lấy giá trị quan sát cuối cùng làm dự báo, còn \textit{seasonal naive} lấy giá trị gần nhất của cùng mùa. Với chuỗi theo giờ có chu kỳ ngày (24 giờ) và tuần (168 giờ):
+\begin{equation}
+    \hat{y}^{\text{Naive}}_{t+h} = y_t, \qquad
+    \hat{y}^{\text{SNaive}(m)}_{t+h} = y_{t+h-m}, \quad m \in \{24, 168\},\ h \le m.
+    \label{eq:baselines}
+\end{equation}
+Ngoài ra, mô hình dự báo bằng trung bình nhãn của tập huấn luyện cho biết mức sai số khi không dùng thông tin thời gian.
+
+\section{Các mô hình học máy sử dụng}
+\label{sec:models_theory}
+
+\subsection{Hồi quy tuyến tính}
+Hồi quy tuyến tính (Linear Regression) giả định đầu ra là tổ hợp tuyến tính của các đặc trưng, $\hat{y} = w_0 + \mathbf{w}^{\top}\mathbf{x}$. Phương pháp bình phương tối thiểu chọn trọng số làm nhỏ tổng bình phương sai số~\cite{hastie2009elements}:
+\begin{equation}
+    \hat{\mathbf{w}} = \argmin_{\mathbf{w}} \sum_{i=1}^{N} \big(y_i - w_0 - \mathbf{w}^{\top}\mathbf{x}_i\big)^2 .
+    \label{eq:ols}
+\end{equation}
+Mô hình huấn luyện nhanh, không có siêu tham số cần chọn và dễ diễn giải qua hệ số. Hạn chế là chỉ biểu diễn quan hệ tuyến tính, nên các biến lịch có quan hệ phi tuyến với đầu ra (giờ trong ngày) cần được mã hóa one-hot; khi các đặc trưng tương quan mạnh với nhau (đa cộng tuyến), hệ số kém ổn định. Hồi quy Ridge~\cite{hoerl1970ridge} khắc phục điểm sau bằng cách thêm điều chuẩn L2 $\lambda\lVert\mathbf{w}\rVert_2^2$ vào~\eqref{eq:ols}.
+
+\subsection{Cây quyết định hồi quy}
+Cây quyết định theo thuật toán CART~\cite{breiman1984classification} chia không gian đặc trưng một cách đệ quy: tại mỗi nút, chọn đặc trưng $x_j$ và ngưỡng $s$ để tách dữ liệu thành $\{x_j \le s\}$ và $\{x_j > s\}$ sao cho tổng bình phương sai số trong hai nhánh con nhỏ nhất. Giá trị dự báo tại một lá là trung bình nhãn của các mẫu thuộc lá. Cây học được quan hệ phi tuyến và tương tác giữa các đặc trưng, không cần chuẩn hóa dữ liệu, nhưng một cây sâu có phương sai lớn và dễ quá khớp.
+
+\subsection{Rừng ngẫu nhiên}
+Random Forest~\cite{breiman2001random} là tập hợp $B$ cây quyết định, mỗi cây học trên một mẫu bootstrap (lấy mẫu có hoàn lại) của tập huấn luyện và tại mỗi lần tách chỉ xét một tập con ngẫu nhiên các đặc trưng. Dự báo là trung bình của các cây:
+\begin{equation}
+    \hat{f}_{\text{RF}}(\mathbf{x}) = \frac{1}{B}\sum_{b=1}^{B} T_b(\mathbf{x}).
+    \label{eq:rf}
+\end{equation}
+Lấy trung bình nhiều cây ít tương quan với nhau làm giảm phương sai so với một cây. Các siêu tham số chính là số cây (\code{n_estimators}), số mẫu tối thiểu ở lá (\code{min_samples_leaf}) và tỷ lệ đặc trưng xét ở mỗi lần tách (\code{max_features}).
+
+\subsection{Gradient Boosting và XGBoost}
+Khác với Random Forest xây các cây độc lập, \textit{boosting} xây các cây tuần tự, mỗi cây mới sửa lỗi của mô hình hiện tại. Trong Gradient Boosting~\cite{friedman2001greedy}, cây $h_m$ ở bước $m$ được khớp với gradient âm của hàm mất mát (với mất mát bình phương, đó là phần dư) rồi được cộng vào mô hình với tốc độ học $\nu$:
+\begin{equation}
+    F_m(\mathbf{x}) = F_{m-1}(\mathbf{x}) + \nu\, h_m(\mathbf{x}).
+    \label{eq:gb}
+\end{equation}
+XGBoost~\cite{chen2016xgboost} là một cài đặt hiệu quả của cây tăng cường gradient với hàm mục tiêu có điều chuẩn cho từng cây:
+\begin{equation}
+    \mathcal{L} = \sum_{i} l(y_i, \hat{y}_i) + \sum_{k} \Omega(f_k), \qquad \Omega(f) = \gamma T + \tfrac{1}{2}\lambda \lVert \mathbf{w} \rVert^2,
+    \label{eq:xgb}
+\end{equation}
+trong đó $T$ là số lá và $\mathbf{w}$ là giá trị các lá. XGBoost dùng xấp xỉ bậc hai của hàm mất mát khi tối ưu và xử lý trực tiếp giá trị thiếu khi tìm điểm tách~\cite{chen2016xgboost}. Các siêu tham số chính là số cây, tốc độ học (\code{learning_rate}), độ sâu cây (\code{max_depth}) và tỷ lệ lấy mẫu dòng, cột (\code{subsample}, \code{colsample_bytree}).
+
+\section{Đánh giá mô hình}
+\label{sec:eval_theory}
+
+\subsection{Chỉ số đánh giá}
+Với $e_i = y_i - \hat{y}_i$ trên $N$ mẫu đánh giá:
+\begin{equation}
+    \mathrm{MAE} = \frac{1}{N}\sum_{i}|e_i|, \qquad
+    \mathrm{RMSE} = \sqrt{\frac{1}{N}\sum_{i} e_i^2}, \qquad
+    \mathrm{MAPE} = \frac{100\%}{N}\sum_{i}\left|\frac{e_i}{y_i}\right|.
+    \label{eq:metrics}
+\end{equation}
+MAE và RMSE có cùng đơn vị với dữ liệu (kWh) nên dễ diễn giải. Mô hình tối ưu MAE cho dự báo hướng về trung vị, còn RMSE phạt nặng các sai số lớn~\cite[mục 5.8]{hyndman2021fpp3}. MAPE không phụ thuộc đơn vị nhưng không xác định khi $y_i = 0$ và rất lớn khi $y_i$ gần 0~\cite{hyndman2021fpp3,hyndman2006another}.
+
+\subsection{Kiểm định chéo theo thời gian và rò rỉ dữ liệu}
+\textit{Rò rỉ dữ liệu} là khi thông tin không có sẵn tại thời điểm dự báo lọt vào quá trình huấn luyện, làm kết quả đánh giá lạc quan hơn thực tế~\cite{kaufman2012leakage}. Tài liệu scikit-learn nêu nguyên tắc không bao giờ gọi \code{fit} trên dữ liệu kiểm tra: tham số của các bước tiền xử lý (giá trị điền khuyết, trung bình và độ lệch chuẩn khi chuẩn hóa) phải được học trên tập huấn luyện, và \code{Pipeline} giúp bảo đảm điều đó~\cite{sklearn2026pitfalls}.
+
+Với chuỗi thời gian, chia ngẫu nhiên kiểu K-Fold có thể dẫn đến học từ tương lai để dự báo quá khứ. \code{TimeSeriesSplit}~\cite{sklearn2026tss} tạo các cặp huấn luyện -- kiểm định trong đó phần huấn luyện luôn đứng trước và mở rộng dần qua các fold; tham số \code{gap} bỏ bớt một số mẫu giữa hai phần. Cách làm này tương ứng với đánh giá theo ``gốc dự báo trượt'' (rolling forecasting origin)~\cite[mục 5.10]{hyndman2021fpp3}. Bergmeir và cộng sự~\cite{bergmeir2012use,bergmeir2018note} phân tích tính hợp lệ của kiểm định chéo cho chuỗi thời gian; đề tài chọn phương án thận trọng là luôn giữ thứ tự thời gian.
+
+\subsection{Tầm quan trọng của đặc trưng}
+Tầm quan trọng hoán vị (permutation importance) đo mức tăng sai số khi hoán vị ngẫu nhiên giá trị của một đặc trưng trên dữ liệu đánh giá, qua đó phá vỡ quan hệ giữa đặc trưng đó và đầu ra~\cite{breiman2001random}. Cách đo này áp dụng được cho mọi mô hình. Khi các đặc trưng tương quan mạnh với nhau, chúng chia sẻ tầm quan trọng, nên giá trị của từng đặc trưng cần được đọc theo nhóm.

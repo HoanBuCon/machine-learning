@@ -1,0 +1,8 @@
+\unnumberedchapter{MỞ ĐẦU}
+\label{chap:introduction}
+
+Dự báo phụ tải điện là bài toán nền tảng trong vận hành và lập kế hoạch hệ thống điện~\cite{hong2016probabilistic}. Ở cấp độ một hộ gia đình, điện năng tiêu thụ biến động mạnh theo giờ trong ngày, theo ngày trong tuần và theo mùa, vì phụ thuộc trực tiếp vào thói quen sinh hoạt. Biết trước mức tiêu thụ trong vài giờ tới giúp người dùng chủ động sử dụng điện, đồng thời là bài toán phù hợp để thực hành trọn vẹn quy trình học máy: từ phát biểu bài toán, khảo sát và làm sạch dữ liệu đến xây dựng, đánh giá và cải tiến mô hình.
+
+Nhóm lựa chọn đề tài ``Dự báo điện năng tiêu thụ của hộ gia đình dựa trên dữ liệu đo theo thời gian'', sử dụng bộ dữ liệu công khai \textit{Individual Household Electric Power Consumption} của Kho dữ liệu Học máy UCI~\cite{hebrail2006uci}. Theo định hướng của giảng viên, đề tài gồm bốn nội dung: (1) nghiên cứu bài toán dự báo chuỗi thời gian và cách chuyển về hồi quy có giám sát bằng đặc trưng trễ, cửa sổ trượt và đặc trưng lịch; (2) tiền xử lý dữ liệu, tổng hợp theo giờ và theo ngày, phân tích tính mùa vụ; (3) xây dựng và so sánh các mô hình cơ sở (naive, seasonal naive) với Linear Regression, Random Forest và XGBoost, chia dữ liệu theo thời gian để tránh rò rỉ dữ liệu; (4) đánh giá bằng MAE, RMSE, MAPE theo các tầm dự báo và phân tích sai số theo thời điểm trong ngày.
+
+Báo cáo được xây dựng theo các mốc của học phần và hiện gồm ba chương: Chương~\ref{chap:theory} trình bày cơ sở lý thuyết; Chương~\ref{chap:data} trình bày bài toán, dữ liệu và tiền xử lý (Bài kiểm tra 1); Chương~\ref{chap:models} trình bày việc xây dựng, huấn luyện và đánh giá mô hình (Bài kiểm tra 2). Nội dung tối ưu hóa và cải tiến mô hình sẽ được bổ sung ở giai đoạn tiếp theo.

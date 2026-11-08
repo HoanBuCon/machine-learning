@@ -1,0 +1,17 @@
+\begin{table}[htbp]
+\centering
+\caption[Mức độ tập trung của sai số]{Sai lệch trung bình (dự báo $-$ thực tế) ở nhóm giờ tiêu thụ cao nhất và thấp nhất, và tỷ trọng tổng sai số tuyệt đối do 10\% số giờ có sai số lớn nhất gây ra (dự báo kiểm định của 5 fold).}
+\label{tab:error_conc}
+\small
+\begin{tabular}{|c|l|c|c|c|}
+\hline
+\textbf{$h$} & \textbf{Mô hình} & \textbf{5\% giờ cao nhất} & \textbf{10\% giờ thấp nhất} & \textbf{Tỷ trọng (\%)} \\
+\hline
+1 & LinearRegression & $-$1{,}112 & 0{,}214 & 33{,}2 \\ \hline
+1 & RandomForest & $-$1{,}148 & 0{,}201 & 34{,}5 \\ \hline
+1 & XGBoost & $-$1{,}061 & 0{,}189 & 34{,}4 \\ \hline
+24 & LinearRegression & $-$1{,}626 & 0{,}425 & 30{,}6 \\ \hline
+24 & RandomForest & $-$1{,}603 & 0{,}438 & 31{,}3 \\ \hline
+24 & XGBoost & $-$1{,}436 & 0{,}440 & 31{,}6 \\ \hline
+\end{tabular}
+\end{table}

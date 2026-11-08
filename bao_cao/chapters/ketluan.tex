@@ -1,0 +1,24 @@
+\unnumberedchapter{KẾT LUẬN}
+\label{chap:conclusion}
+
+\plainheading{1. Kết quả đạt được}
+Đến giai đoạn hiện tại, nhóm đã hoàn thành hai phần đầu của quy trình học máy cho bài toán dự báo điện năng tiêu thụ theo giờ của hộ gia đình:
+\begin{itemize}
+    \item \textbf{Bài toán và dữ liệu:} phát biểu bài toán hồi quy với đơn vị mẫu, đầu vào, đầu ra và tầm dự báo cụ thể; chọn MAE làm chỉ số chính; lập từ điển dữ liệu; khảo sát phân bố, tương quan, tự tương quan và tính mùa vụ theo giờ, ngày, tháng.
+    \item \textbf{Chất lượng và chuẩn bị dữ liệu:} định lượng các vấn đề chất lượng, nổi bật là 25.979 phút thiếu tập trung thành 71 khối; tổng hợp nhãn theo giờ không nội suy; chia dữ liệu theo thời điểm mục tiêu; kiểm định chéo \code{TimeSeriesSplit} có khoảng đệm; đường ống tiền xử lý chỉ học trên tập huấn luyện.
+    \item \textbf{Mô hình:} trên kiểm định chéo 5 fold, cả ba mô hình Linear Regression, Random Forest và XGBoost đều vượt mọi mô hình cơ sở ở cả bốn tầm dự báo và ở mọi fold, giảm MAE 12,7--20,0\% so với mô hình cơ sở tốt nhất. Random Forest có MAE thấp nhất (0,365 kWh ở $h = 1$; 0,482--0,495 kWh ở $h \ge 6$). Quy trình chạy lại được từ đầu trong môi trường mới và cho kết quả trùng khớp.
+\end{itemize}
+
+\plainheading{2. Hạn chế}
+\begin{itemize}
+    \item Dữ liệu của một hộ duy nhất, không có thông tin thời tiết; các giải thích về hành vi sinh hoạt (kỳ nghỉ tháng 8, sưởi mùa đông) mới là giả thuyết.
+    \item Mô hình dự báo thấp các giờ đỉnh và sai số tập trung ở khung 19--21 giờ; mô hình cây có dấu hiệu quá khớp chưa được kiểm chứng đầy đủ.
+    \item Siêu tham số chưa được tối ưu và mô hình chưa được đánh giá trên tập kiểm tra.
+\end{itemize}
+
+\plainheading{3. Hướng phát triển}
+\begin{itemize}
+    \item Kiểm chứng quá khớp bằng đường cong học tập và đường cong kiểm định; tối ưu siêu tham số bằng tìm kiếm trên cùng các fold kiểm định chéo.
+    \item Cải tiến đặc trưng (ngày lễ, giá trị trễ của các nhóm công tơ phụ) và thử phương pháp tổ hợp mô hình, so sánh trước -- sau trên cùng điều kiện.
+    \item Đánh giá mô hình cuối một lần trên tập kiểm tra năm 2010 và so sánh với kết quả kiểm định chéo.
+\end{itemize}

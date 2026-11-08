@@ -1,0 +1,35 @@
+\begin{table}[htbp]
+\centering
+\caption[So sánh mô hình học máy với mô hình cơ sở tốt nhất]{So sánh MAE trung bình của mô hình học máy với mô hình cơ sở tốt nhất ở từng tầm dự báo; cột cuối là số fold mô hình học máy có MAE thấp hơn.}
+\label{tab:vs_baseline}
+\small
+\begin{tabular}{|c|c|l|c|c|c|}
+\hline
+\textbf{$h$} & \textbf{Cơ sở tốt nhất (MAE)} & \textbf{Mô hình} & \textbf{MAE} & \textbf{Giảm MAE (\%)} & \textbf{Số fold tốt hơn} \\
+\hline
+\multirow{3}{*}{1} & \multirow{3}{*}{Naive (0{,}440)} & LinearRegression & 0{,}384 & 12{,}7 & 5/5 \\
+\cline{3-6}
+ &  & RandomForest & 0{,}365 & 17{,}0 & 5/5 \\
+\cline{3-6}
+ &  & XGBoost & 0{,}366 & 16{,}9 & 5/5 \\
+\hline
+\multirow{3}{*}{6} & \multirow{3}{*}{SNaive168 (0{,}602)} & LinearRegression & 0{,}508 & 15{,}5 & 5/5 \\
+\cline{3-6}
+ &  & RandomForest & 0{,}482 & 20{,}0 & 5/5 \\
+\cline{3-6}
+ &  & XGBoost & 0{,}488 & 19{,}0 & 5/5 \\
+\hline
+\multirow{3}{*}{12} & \multirow{3}{*}{SNaive168 (0{,}602)} & LinearRegression & 0{,}509 & 15{,}4 & 5/5 \\
+\cline{3-6}
+ &  & RandomForest & 0{,}488 & 18{,}9 & 5/5 \\
+\cline{3-6}
+ &  & XGBoost & 0{,}488 & 18{,}8 & 5/5 \\
+\hline
+\multirow{3}{*}{24} & \multirow{3}{*}{SNaive168 (0{,}603)} & LinearRegression & 0{,}507 & 15{,}8 & 5/5 \\
+\cline{3-6}
+ &  & RandomForest & 0{,}495 & 17{,}8 & 5/5 \\
+\cline{3-6}
+ &  & XGBoost & 0{,}507 & 15{,}8 & 5/5 \\
+\hline
+\end{tabular}
+\end{table}
