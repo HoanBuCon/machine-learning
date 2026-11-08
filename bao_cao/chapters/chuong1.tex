@@ -18,25 +18,25 @@ Học máy thường được chia thành học có giám sát, học không gi�
 trong đó $L$ là hàm mất mát (ví dụ bình phương sai số) và $\lambda \ge 0$ điều khiển mức điều chuẩn.
 
 \subsection{Tổng quát hóa, quá khớp và chưa khớp}
-Mục tiêu của mô hình là dự báo tốt trên dữ liệu mới chứ không chỉ trên dữ liệu đã học. Với mất mát bình phương, sai số kỳ vọng tại một điểm được phân rã thành nhiễu không thể giảm, bình phương độ chệch (bias) và phương sai (variance) của mô hình~\cite[mục 7.3]{hastie2009elements}. Mô hình quá đơn giản có độ chệch lớn và cho sai số cao trên cả tập huấn luyện lẫn tập kiểm định (\textit{chưa khớp}). Mô hình quá phức tạp học cả nhiễu của dữ liệu huấn luyện, cho sai số huấn luyện nhỏ nhưng sai số kiểm định lớn (\textit{quá khớp}). Vì vậy dữ liệu được chia thành tập huấn luyện để học tham số, tập kiểm định (hoặc kiểm định chéo) để so sánh và lựa chọn mô hình, và tập kiểm tra chỉ dùng một lần ở cuối để ước lượng sai số trên dữ liệu mới~\cite{hastie2009elements}.
+Mục tiêu của mô hình là dự báo tốt trên dữ liệu mới chứ không chỉ trên dữ liệu đã học. Với mất mát bình phương, sai số kỳ vọng tại một điểm được phân rã thành nhiễu không thể giảm, bình phương độ chệch (bias) và phương sai (variance) của mô hình~\cite[mục 7.3]{hastie2009elements}. Mô hình quá đơn giản có độ chệch lớn và cho sai số cao trên cả tập huấn luyện lẫn tập kiểm định (chưa khớp). Mô hình quá phức tạp học cả nhiễu của dữ liệu huấn luyện, cho sai số huấn luyện nhỏ nhưng sai số kiểm định lớn (quá khớp). Vì vậy dữ liệu được chia thành tập huấn luyện để học tham số, tập kiểm định (hoặc kiểm định chéo) để so sánh và lựa chọn mô hình, và tập kiểm tra chỉ dùng một lần ở cuối để ước lượng sai số trên dữ liệu mới~\cite{hastie2009elements}.
 
 \section{Dự báo chuỗi thời gian bằng hồi quy có giám sát}
 \label{sec:ts_theory}
 
 \subsection{Chuỗi thời gian và các thành phần}
-Chuỗi thời gian là dãy quan sát $\{y_t\}$ được ghi theo thứ tự thời gian, thường cách đều nhau. Hyndman và Athanasopoulos~\cite[mục 2.3]{hyndman2021fpp3} phân biệt ba dạng biến động: \textit{xu hướng} (tăng hoặc giảm dài hạn), \textit{mùa vụ} (mẫu lặp lại với chu kỳ cố định và biết trước) và \textit{chu kỳ} (dao động không có tần số cố định); một chuỗi có thể có nhiều mùa vụ cùng lúc. Khác với dữ liệu dạng bảng thông thường, các quan sát của chuỗi thời gian phụ thuộc lẫn nhau (tự tương quan), nên không được xáo trộn dữ liệu khi chia tập và mọi thông tin dùng để dự báo phải có sẵn tại thời điểm dự báo.
+Chuỗi thời gian là dãy quan sát $\{y_t\}$ được ghi theo thứ tự thời gian, thường cách đều nhau. Hyndman và Athanasopoulos~\cite[mục 2.3]{hyndman2021fpp3} phân biệt ba dạng biến động: xu hướng (tăng hoặc giảm dài hạn), mùa vụ (mẫu lặp lại với chu kỳ cố định và biết trước) và chu kỳ (dao động không có tần số cố định); một chuỗi có thể có nhiều mùa vụ cùng lúc. Khác với dữ liệu dạng bảng thông thường, các quan sát của chuỗi thời gian phụ thuộc lẫn nhau (tự tương quan), nên không được xáo trộn dữ liệu khi chia tập và mọi thông tin dùng để dự báo phải có sẵn tại thời điểm dự báo.
 
 \subsection{Chuyển bài toán dự báo về hồi quy}
 Để dùng các mô hình hồi quy thông thường, chuỗi $\{y_t\}$ được chuyển thành bảng có giám sát: mỗi dòng ứng với một thời điểm gốc $t$, đầu vào là các đặc trưng chỉ dùng thông tin đến $t$, đầu ra là $y_{t+h}$ với $h$ là tầm dự báo. Đề tài dùng ba nhóm đặc trưng:
 \begin{itemize}
     \item Đặc trưng trễ (lag): các giá trị quá khứ $y_{t-k}$, đặc biệt các độ trễ ứng với chu kỳ ngày và tuần.
     \item Đặc trưng cửa sổ trượt (rolling window): thống kê trên $w$ giờ gần nhất kết thúc tại $t$, ví dụ trung bình $\bar{y}^{(w)}_t = \frac{1}{w}\sum_{j=0}^{w-1} y_{t-j}$; cửa sổ không được chứa giá trị sau $t$.
-    \item Đặc trưng lịch: giờ trong ngày, ngày trong tuần, tháng của \textit{thời điểm mục tiêu} $t+h$; các giá trị này biết trước nên được phép dùng.
+    \item Đặc trưng lịch: giờ trong ngày, ngày trong tuần, tháng của thời điểm mục tiêu $t+h$; các giá trị này biết trước nên được phép dùng.
 \end{itemize}
-Khi cần dự báo nhiều tầm $h$, đề tài dùng \textit{chiến lược trực tiếp} (Direct): huấn luyện một mô hình riêng cho mỗi $h$. Ben Taieb và cộng sự~\cite{bentaieb2012review} so sánh các chiến lược dự báo nhiều bước; chiến lược trực tiếp không bị cộng dồn sai số qua các bước như chiến lược đệ quy, đổi lại phải huấn luyện nhiều mô hình.
+Khi cần dự báo nhiều tầm $h$, đề tài dùng chiến lược trực tiếp (Direct): huấn luyện một mô hình riêng cho mỗi $h$. Ben Taieb và cộng sự~\cite{bentaieb2012review} so sánh các chiến lược dự báo nhiều bước; chiến lược trực tiếp không bị cộng dồn sai số qua các bước như chiến lược đệ quy, đổi lại phải huấn luyện nhiều mô hình.
 
 \subsection{Mô hình cơ sở}
-Mô hình cơ sở là mốc tối thiểu mà một mô hình học máy phải vượt qua. Theo Hyndman và Athanasopoulos~\cite[mục 5.2]{hyndman2021fpp3}, phương pháp \textit{naive} lấy giá trị quan sát cuối cùng làm dự báo, còn \textit{seasonal naive} lấy giá trị gần nhất của cùng mùa. Với chuỗi theo giờ có chu kỳ ngày (24 giờ) và tuần (168 giờ):
+Mô hình cơ sở là mốc tối thiểu mà một mô hình học máy phải vượt qua. Theo Hyndman và Athanasopoulos~\cite[mục 5.2]{hyndman2021fpp3}, phương pháp naive lấy giá trị quan sát cuối cùng làm dự báo, còn seasonal naive lấy giá trị gần nhất của cùng mùa. Với chuỗi theo giờ có chu kỳ ngày (24 giờ) và tuần (168 giờ):
 \begin{equation}
     \hat{y}^{\text{Naive}}_{t+h} = y_t, \qquad
     \hat{y}^{\text{SNaive}(m)}_{t+h} = y_{t+h-m}, \quad m \in \{24, 168\},\ h \le m.
@@ -67,7 +67,7 @@ Random Forest~\cite{breiman2001random} là tập hợp $B$ cây quyết định,
 Lấy trung bình nhiều cây ít tương quan với nhau làm giảm phương sai so với một cây. Các siêu tham số chính là số cây, số mẫu tối thiểu ở lá và tỷ lệ đặc trưng xét ở mỗi lần tách.
 
 \subsection{Gradient Boosting và XGBoost}
-Khác với Random Forest xây các cây độc lập, \textit{boosting} xây các cây tuần tự, mỗi cây mới sửa lỗi của mô hình hiện tại. Trong Gradient Boosting~\cite{friedman2001greedy}, cây $h_m$ ở bước $m$ được khớp với gradient âm của hàm mất mát (với mất mát bình phương, đó là phần dư) rồi được cộng vào mô hình với tốc độ học $\nu$:
+Khác với Random Forest xây các cây độc lập, boosting xây các cây tuần tự, mỗi cây mới sửa lỗi của mô hình hiện tại. Trong Gradient Boosting~\cite{friedman2001greedy}, cây $h_m$ ở bước $m$ được khớp với gradient âm của hàm mất mát (với mất mát bình phương, đó là phần dư) rồi được cộng vào mô hình với tốc độ học $\nu$:
 \begin{equation}
     F_m(\mathbf{x}) = F_{m-1}(\mathbf{x}) + \nu\, h_m(\mathbf{x}).
     \label{eq:gb}
@@ -93,7 +93,7 @@ Với $e_i = y_i - \hat{y}_i$ trên $N$ mẫu đánh giá:
 MAE và RMSE có cùng đơn vị với dữ liệu (kWh) nên dễ diễn giải. Mô hình tối ưu MAE cho dự báo hướng về trung vị, còn RMSE phạt nặng các sai số lớn~\cite[mục 5.8]{hyndman2021fpp3}. MAPE không phụ thuộc đơn vị nhưng không xác định khi $y_i = 0$ và rất lớn khi $y_i$ gần 0~\cite{hyndman2021fpp3,hyndman2006another}.
 
 \subsection{Kiểm định chéo theo thời gian và rò rỉ dữ liệu}
-\textit{Rò rỉ dữ liệu} là khi thông tin không có sẵn tại thời điểm dự báo lọt vào quá trình huấn luyện, làm kết quả đánh giá lạc quan hơn thực tế~\cite{kaufman2012leakage}. Tài liệu scikit-learn nêu nguyên tắc không khớp (fit) các bước tiền xử lý trên dữ liệu kiểm tra: tham số của các bước tiền xử lý (giá trị điền khuyết, trung bình và độ lệch chuẩn khi chuẩn hóa) phải được học trên tập huấn luyện, và việc tổ chức các bước thành một Pipeline giúp bảo đảm điều đó~\cite{sklearn2026pitfalls}.
+Rò rỉ dữ liệu là khi thông tin không có sẵn tại thời điểm dự báo lọt vào quá trình huấn luyện, làm kết quả đánh giá lạc quan hơn thực tế~\cite{kaufman2012leakage}. Tài liệu scikit-learn nêu nguyên tắc không khớp (fit) các bước tiền xử lý trên dữ liệu kiểm tra: tham số của các bước tiền xử lý (giá trị điền khuyết, trung bình và độ lệch chuẩn khi chuẩn hóa) phải được học trên tập huấn luyện, và việc tổ chức các bước thành một Pipeline giúp bảo đảm điều đó~\cite{sklearn2026pitfalls}.
 
 Với chuỗi thời gian, chia ngẫu nhiên kiểu K-Fold có thể dẫn đến học từ tương lai để dự báo quá khứ. Phương pháp TimeSeriesSplit~\cite{sklearn2026tss} tạo các cặp huấn luyện -- kiểm định trong đó phần huấn luyện luôn đứng trước và mở rộng dần qua các fold; một khoảng đệm (gap) bỏ bớt một số mẫu giữa hai phần. Cách làm này tương ứng với đánh giá theo ``gốc dự báo trượt'' (rolling forecasting origin)~\cite[mục 5.10]{hyndman2021fpp3}. Bergmeir và cộng sự~\cite{bergmeir2012use,bergmeir2018note} phân tích tính hợp lệ của kiểm định chéo cho chuỗi thời gian; đề tài chọn phương án thận trọng là luôn giữ thứ tự thời gian.
 
