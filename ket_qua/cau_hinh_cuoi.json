@@ -1,0 +1,83 @@
+{
+  "ghi_chu": "Chọn chỉ dựa trên kiểm định chéo 5 fold trong tập huấn luyện; chưa dùng tập kiểm tra 2010.",
+  "bo_dac_trung": "SUB",
+  "dac_trung": [
+    "lag_0",
+    "lag_1",
+    "lag_2",
+    "lag_3",
+    "lag_5",
+    "lag_11",
+    "lag_23",
+    "lag_47",
+    "lag_167",
+    "same_hour_prev_day",
+    "same_hour_prev_week",
+    "roll_mean_3",
+    "roll_std_3",
+    "roll_mean_24",
+    "roll_std_24",
+    "roll_mean_168",
+    "roll_std_168",
+    "hour",
+    "dayofweek",
+    "month",
+    "is_weekend",
+    "sub1_lag_0",
+    "sub1_lag_1",
+    "sub2_lag_0",
+    "sub2_lag_1",
+    "sub3_lag_0",
+    "sub3_lag_1"
+  ],
+  "mo_hinh": {
+    "1": {
+      "ten": "XGBoost",
+      "sieu_tham_so": {
+        "subsample": 1.0,
+        "reg_lambda": 10,
+        "n_estimators": 400,
+        "min_child_weight": 20,
+        "max_depth": 8,
+        "learning_rate": 0.03,
+        "colsample_bytree": 0.9
+      }
+    },
+    "6": {
+      "ten": "XGBoost",
+      "sieu_tham_so": {
+        "subsample": 0.8,
+        "reg_lambda": 10,
+        "n_estimators": 200,
+        "min_child_weight": 1,
+        "max_depth": 6,
+        "learning_rate": 0.03,
+        "colsample_bytree": 0.9
+      }
+    },
+    "12": {
+      "ten": "XGBoost",
+      "sieu_tham_so": {
+        "subsample": 1.0,
+        "reg_lambda": 0.1,
+        "n_estimators": 800,
+        "min_child_weight": 10,
+        "max_depth": 6,
+        "learning_rate": 0.01,
+        "colsample_bytree": 0.7
+      }
+    },
+    "24": {
+      "ten": "XGBoost",
+      "sieu_tham_so": {
+        "subsample": 0.8,
+        "reg_lambda": 10,
+        "n_estimators": 200,
+        "min_child_weight": 1,
+        "max_depth": 6,
+        "learning_rate": 0.03,
+        "colsample_bytree": 0.9
+      }
+    }
+  }
+}

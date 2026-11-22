@@ -1,0 +1,35 @@
+\begin{table}[htbp]
+\centering
+\caption[So sánh trước và sau cải tiến (ablation)]{MAE kiểm định chéo (kWh, trung bình $\pm$ độ lệch chuẩn qua 5 fold) qua từng bước cải tiến, cùng dữ liệu, cùng 5 fold và cùng tập mẫu. A0: cấu hình Bài kiểm tra 2; A1: thêm đặc trưng công tơ phụ; A2: tối ưu siêu tham số; A3: tổ hợp Voting.}
+\label{tab:ablation}
+\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{tabular}{|c|l|c|c|c|c|}
+\hline
+\textbf{Bước} & \textbf{Mô hình} & \textbf{$h = 1$} & \textbf{$h = 6$} & \textbf{$h = 12$} & \textbf{$h = 24$} \\
+\hline
+\multirow{2}{*}{Cơ sở} & Naive & 0{,}440 $\pm$ 0{,}069 & 0{,}971 $\pm$ 0{,}186 & 0{,}781 $\pm$ 0{,}207 & 0{,}630 $\pm$ 0{,}128 \\
+\cline{2-6}
+ & SNaive168 & 0{,}602 $\pm$ 0{,}127 & 0{,}602 $\pm$ 0{,}127 & 0{,}602 $\pm$ 0{,}127 & 0{,}603 $\pm$ 0{,}127 \\
+\hline
+\multirow{3}{*}{A0} & Linear Regression & 0{,}384 $\pm$ 0{,}052 & 0{,}508 $\pm$ 0{,}081 & 0{,}509 $\pm$ 0{,}083 & 0{,}507 $\pm$ 0{,}088 \\
+\cline{2-6}
+ & Random Forest & 0{,}365 $\pm$ 0{,}048 & 0{,}482 $\pm$ 0{,}078 & 0{,}488 $\pm$ 0{,}078 & 0{,}495 $\pm$ 0{,}080 \\
+\cline{2-6}
+ & XGBoost & 0{,}366 $\pm$ 0{,}056 & 0{,}488 $\pm$ 0{,}107 & 0{,}488 $\pm$ 0{,}096 & 0{,}507 $\pm$ 0{,}115 \\
+\hline
+\multirow{3}{*}{A1} & Linear Regression & 0{,}378 $\pm$ 0{,}049 & 0{,}506 $\pm$ 0{,}081 & 0{,}504 $\pm$ 0{,}083 & 0{,}505 $\pm$ 0{,}086 \\
+\cline{2-6}
+ & Random Forest & 0{,}351 $\pm$ 0{,}046 & 0{,}482 $\pm$ 0{,}077 & 0{,}488 $\pm$ 0{,}077 & 0{,}496 $\pm$ 0{,}078 \\
+\cline{2-6}
+ & XGBoost & 0{,}336 $\pm$ 0{,}050 & 0{,}480 $\pm$ 0{,}091 & 0{,}485 $\pm$ 0{,}092 & 0{,}506 $\pm$ 0{,}114 \\
+\hline
+\multirow{3}{*}{A2} & Ridge & 0{,}378 $\pm$ 0{,}050 & 0{,}506 $\pm$ 0{,}081 & 0{,}504 $\pm$ 0{,}083 & 0{,}505 $\pm$ 0{,}086 \\
+\cline{2-6}
+ & Random Forest & 0{,}348 $\pm$ 0{,}046 & 0{,}481 $\pm$ 0{,}078 & 0{,}486 $\pm$ 0{,}078 & 0{,}493 $\pm$ 0{,}079 \\
+\cline{2-6}
+ & XGBoost & 0{,}334 $\pm$ 0{,}050 & 0{,}474 $\pm$ 0{,}084 & 0{,}480 $\pm$ 0{,}085 & 0{,}492 $\pm$ 0{,}098 \\
+\hline
+\multirow{1}{*}{A3} & Voting (RF + XGBoost) & 0{,}337 $\pm$ 0{,}047 & 0{,}476 $\pm$ 0{,}081 & 0{,}481 $\pm$ 0{,}082 & 0{,}491 $\pm$ 0{,}088 \\
+\hline
+\end{tabular}
+\end{table}

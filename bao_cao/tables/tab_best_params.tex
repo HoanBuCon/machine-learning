@@ -1,0 +1,33 @@
+\begin{table}[htbp]
+\centering
+\caption[Siêu tham số tối ưu]{Siêu tham số tốt nhất tìm được bằng tìm kiếm trên 5 fold kiểm định chéo.}
+\label{tab:best_params}
+\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{tabular}{|l|l|c|c|c|c|}
+\hline
+\textbf{Mô hình} & \textbf{Siêu tham số} & \textbf{$h = 1$} & \textbf{$h = 6$} & \textbf{$h = 12$} & \textbf{$h = 24$} \\
+\hline
+\multirow{3}{*}{Random Forest} & Số mẫu tối thiểu ở lá & 5 & 10 & 10 & 20 \\
+\cline{2-6}
+ & Tỷ lệ đặc trưng mỗi lần tách & 1{,}00 & 0{,}70 & 0{,}70 & 0{,}70 \\
+\cline{2-6}
+ & Độ sâu tối đa & không giới hạn & 20 & 20 & không giới hạn \\
+\hline
+\multirow{7}{*}{XGBoost} & Số cây & 400 & 200 & 800 & 200 \\
+\cline{2-6}
+ & Tốc độ học & 0{,}03 & 0{,}03 & 0{,}01 & 0{,}03 \\
+\cline{2-6}
+ & Độ sâu tối đa & 8 & 6 & 6 & 6 \\
+\cline{2-6}
+ & Tổng trọng số tối thiểu ở lá & 20 & 1 & 10 & 1 \\
+\cline{2-6}
+ & Tỷ lệ mẫu mỗi cây & 1{,}00 & 0{,}80 & 1{,}00 & 0{,}80 \\
+\cline{2-6}
+ & Tỷ lệ đặc trưng mỗi cây & 0{,}90 & 0{,}90 & 0{,}70 & 0{,}90 \\
+\cline{2-6}
+ & Hệ số phạt L2 ($\lambda$) & 10 & 10 & 0{,}10 & 10 \\
+\hline
+\multirow{1}{*}{Ridge} & $\alpha$ & 10 & 0{,}01 & 0{,}01 & 0{,}01 \\
+\hline
+\end{tabular}
+\end{table}

@@ -1,0 +1,13 @@
+h,Mô hình,alpha,min_samples_leaf,max_features,max_depth,subsample,reg_lambda,n_estimators,min_child_weight,learning_rate,colsample_bytree
+1,Ridge,10.0,,,,,,,,,
+1,RandomForest,,5.0,1.0,,,,,,,
+1,XGBoost,,,,8.0,1.0,10.0,400.0,20.0,0.03,0.9
+6,Ridge,0.01,,,,,,,,,
+6,RandomForest,,10.0,0.7,20.0,,,,,,
+6,XGBoost,,,,6.0,0.8,10.0,200.0,1.0,0.03,0.9
+12,Ridge,0.01,,,,,,,,,
+12,RandomForest,,10.0,0.7,20.0,,,,,,
+12,XGBoost,,,,6.0,1.0,0.1,800.0,10.0,0.01,0.7
+24,Ridge,0.01,,,,,,,,,
+24,RandomForest,,20.0,0.7,,,,,,,
+24,XGBoost,,,,6.0,0.8,10.0,200.0,1.0,0.03,0.9

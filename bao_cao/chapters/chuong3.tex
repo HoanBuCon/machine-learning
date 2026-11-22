@@ -1,12 +1,10 @@
 \chapter{XÂY DỰNG VÀ ĐÁNH GIÁ MÔ HÌNH}
 \label{chap:models}
 
-Chương này trình bày bộ đặc trưng, lý do lựa chọn thuật toán, quy trình huấn luyện và kiểm định chéo, kết quả so sánh các mô hình với mô hình cơ sở, phân tích lỗi và các đặc trưng ảnh hưởng nhiều đến dự báo. Ở giai đoạn này, tập kiểm tra năm 2010 chưa được sử dụng; mọi kết quả là kết quả kiểm định chéo trên tập huấn luyện.
-
 \section{Bộ đặc trưng}
 \label{sec:features}
 
-Với mỗi tầm dự báo $h$, bảng có giám sát gồm 21 đặc trưng chỉ dùng thông tin đến thời điểm gốc $t$ (Bảng~\ref{tab:features}). Các đặc trưng được chọn dựa trên kết quả khảo sát ở Chương~\ref{chap:data}.
+Mọi kết quả trong chương này là kết quả kiểm định chéo trên tập huấn luyện; tập kiểm tra năm 2010 chỉ được dùng ở Chương~\ref{chap:improve}. Với mỗi tầm dự báo $h$, bảng có giám sát gồm 21 đặc trưng chỉ dùng thông tin đến thời điểm gốc $t$ (Bảng~\ref{tab:features}). Các đặc trưng được chọn dựa trên kết quả khảo sát ở Chương~\ref{chap:data}.
 
 \begin{table}[htbp]
     \centering
@@ -28,7 +26,33 @@ Notebook kiểm tra trực tiếp rằng bộ đặc trưng không dùng thông 
 \section{Lựa chọn thuật toán}
 \label{sec:algorithms}
 
-Nhóm dùng bốn mô hình cơ sở theo~\eqref{eq:baselines}: Mean (trung bình nhãn của phần huấn luyện), Naive, SNaive24 và SNaive168. Ba mô hình học máy được chọn theo định hướng của đề tài và đặc điểm dữ liệu (Bảng~\ref{tab:algorithms}).
+Bài toán là hồi quy trên dữ liệu dạng bảng với khoảng 15--24 nghìn mẫu huấn luyện mỗi fold và 21 đặc trưng số, trong đó có giá trị thiếu sau các khối mất dữ liệu. Khảo sát ở Chương~\ref{chap:data} cho thấy ba đặc điểm chi phối việc chọn thuật toán: (1) nhãn phụ thuộc mạnh vào giá trị vài giờ gần nhất, gần như tuyến tính; (2) mức tiêu thụ thay đổi theo giờ trong ngày, thứ trong tuần và tháng theo cách phi tuyến và có tương tác (đỉnh buổi tối mùa đông khác hẳn buổi tối mùa hè); (3) phân bố nhãn lệch phải với các đỉnh đột biến. Nhóm chọn một mô hình tuyến tính và hai mô hình tổ hợp cây để kiểm tra lần lượt mức độ mà mỗi đặc điểm được khai thác.
+
+\subsection{Mô hình cơ sở}
+Bốn mô hình cơ sở theo~\eqref{eq:baselines} không học tham số từ đặc trưng: Mean dự báo bằng trung bình nhãn của phần huấn luyện, Naive lặp lại giá trị giờ vừa qua $y_t$, SNaive24 và SNaive168 lặp lại giá trị cùng giờ ngày trước và tuần trước. Mỗi mô hình ứng với một giả thuyết đơn giản về chuỗi (không có cấu trúc thời gian, quán tính ngắn hạn, chu kỳ ngày, chu kỳ tuần), nên mô hình học máy chỉ có giá trị khi vượt được mô hình cơ sở tốt nhất ở từng tầm dự báo.
+
+\subsection{Hồi quy tuyến tính}
+Hồi quy tuyến tính dự báo $\hat{y}_{t+h}$ là tổng có trọng số của các đặc trưng cộng hệ số chặn, với trọng số tìm bằng bình phương tối thiểu~\eqref{eq:ols}. Lời giải có dạng đóng nên mô hình huấn luyện gần như tức thời và không có siêu tham số cần chọn. Mỗi hệ số cho biết điện năng dự báo thay đổi bao nhiêu khi một đặc trưng tăng một đơn vị (sau chuẩn hóa) và các đặc trưng khác giữ nguyên, nên mô hình dễ diễn giải. Trên dữ liệu của nhóm, mô hình này khai thác tốt đặc điểm (1), nhưng chỉ cộng các ảnh hưởng của giờ, thứ, tháng chứ không biểu diễn được tương tác của chúng (đặc điểm 2). Vì vậy nó đóng vai trò mô hình học máy đơn giản nhất: phần sai số mà hai mô hình cây giảm thêm so với nó chính là phần đến từ quan hệ phi tuyến. Biến giờ, thứ, tháng được mã hóa one-hot vì giá trị số của chúng không có thứ tự ý nghĩa đối với điện năng (giờ 23 không ``lớn hơn'' giờ 0).
+
+\subsection{Random Forest}
+Random Forest xây 300 cây hồi quy độc lập. Mỗi cây học trên một mẫu bootstrap của phần huấn luyện; tại mỗi nút, cây chỉ xét một nửa số đặc trưng chọn ngẫu nhiên và chọn điểm tách làm giảm nhiều nhất tổng bình phương sai số trong hai nhánh con. Dự báo là trung bình của các cây~\eqref{eq:rf}. Mỗi cây chia không gian đặc trưng thành các vùng như ``giờ 19--21, tháng 12--2, mức tiêu thụ giờ trước trên 2 kWh'' và dự báo bằng trung bình nhãn trong vùng, nên tự học được tương tác giữa các biến lịch và mức tiêu thụ gần đây mà không cần mã hóa thủ công. Một cây sâu có phương sai lớn; lấy trung bình nhiều cây được làm khác nhau nhờ bootstrap và chọn ngẫu nhiên đặc trưng làm giảm phương sai này. Ba siêu tham số chính và vai trò của chúng:
+\begin{itemize}
+    \item Số cây: càng nhiều cây, trung bình càng ổn định; sau vài trăm cây lợi ích tăng thêm rất nhỏ nhưng thời gian tăng tuyến tính.
+    \item Số mẫu tối thiểu ở lá: giá trị nhỏ cho cây sâu, khớp chi tiết dữ liệu huấn luyện; giá trị lớn làm dự báo trơn hơn. Đây là siêu tham số điều khiển trực tiếp mức quá khớp.
+    \item Tỷ lệ đặc trưng xét ở mỗi lần tách: nhỏ thì các cây ít tương quan với nhau hơn nhưng mỗi cây yếu hơn.
+\end{itemize}
+Random Forest không cần chuẩn hóa dữ liệu và ít nhạy với siêu tham số, phù hợp làm mô hình phi tuyến chuẩn để so sánh.
+
+\subsection{XGBoost}
+XGBoost xây 400 cây nối tiếp nhau: mỗi cây mới học phần sai số mà các cây trước còn để lại, rồi được cộng vào mô hình sau khi nhân với tốc độ học 0,05~\eqref{eq:gb}. Hàm mục tiêu~\eqref{eq:xgb} gồm sai số bình phương trên dữ liệu huấn luyện cộng thành phần phạt theo số lá và độ lớn giá trị lá của từng cây, nên mô hình vừa giảm sai số vừa bị hạn chế độ phức tạp. Khác Random Forest, các cây của XGBoost nông (độ sâu tối đa 6) và mỗi cây chỉ là một bước hiệu chỉnh nhỏ. Vai trò các siêu tham số chính:
+\begin{itemize}
+    \item Số cây và tốc độ học: tốc độ học nhỏ thì mỗi bước hiệu chỉnh nhỏ, cần nhiều cây hơn nhưng thường tổng quát hóa tốt hơn; hai tham số này phải chọn cùng nhau.
+    \item Độ sâu tối đa và tổng trọng số tối thiểu ở lá: điều khiển độ phức tạp của từng cây, tức mức tương tác giữa các đặc trưng mà mỗi cây biểu diễn được.
+    \item Tỷ lệ lấy mẫu theo dòng và theo cột: mỗi cây chỉ dùng 80\% số mẫu và 80\% số đặc trưng, thêm tính ngẫu nhiên để giảm quá khớp.
+\end{itemize}
+Với dữ liệu của nhóm, XGBoost có hai ưu điểm: tự xử lý giá trị thiếu bằng cách học hướng đi mặc định của mẫu thiếu tại mỗi nút~\cite{chen2016xgboost}, nên không cần điền khuyết các đặc trưng trễ sau khối mất dữ liệu; và các mô hình dựa trên cây như XGBoost và Random Forest được ghi nhận là vẫn rất mạnh trên dữ liệu dạng bảng cỡ trung bình (khoảng 10 nghìn mẫu), cùng bậc độ lớn với dữ liệu của nhóm~\cite{grinsztajn2022why}.
+
+Bảng~\ref{tab:algorithms} tóm tắt tiền xử lý và siêu tham số của ba mô hình.
 
 \begin{table}[htbp]
     \centering
@@ -44,7 +68,7 @@ Nhóm dùng bốn mô hình cơ sở theo~\eqref{eq:baselines}: Mean (trung bìn
     \end{tabularx}
 \end{table}
 
-Siêu tham số được cố định trước ở các giá trị phổ biến và không được chọn theo kết quả kiểm định. Việc dò tìm siêu tham số trên kiểm định chéo thuộc giai đoạn tối ưu hóa ở bước tiếp theo; tách hai giai đoạn giúp đo được tác động của việc tối ưu. Mọi mô hình cố định hạt giống ngẫu nhiên bằng 42 để kết quả tái lập được.
+Siêu tham số được cố định trước ở các giá trị phổ biến và không được chọn theo kết quả kiểm định. Việc dò tìm siêu tham số được trình bày ở Chương~\ref{chap:improve}; tách hai giai đoạn giúp đo được tác động của việc tối ưu. Mọi mô hình cố định hạt giống ngẫu nhiên bằng 42 để kết quả tái lập được.
 
 \section{Quy trình huấn luyện và đánh giá}
 \label{sec:protocol}
@@ -104,7 +128,7 @@ Hình~\ref{fig:mae_fold} cho thấy thứ hạng các mô hình gần như giữ
 
 Bảng~\ref{tab:train_val} và Hình~\ref{fig:train_val} cho thấy hai hành vi khác nhau:
 \begin{itemize}
-    \item Random Forest và XGBoost có MAE huấn luyện chỉ 0,24--0,34 kWh trong khi MAE kiểm định là 0,37--0,51 kWh (gấp 1,4--1,6 lần), và khoảng cách này xuất hiện ở mọi fold. Đây là dấu hiệu quá khớp. Tuy nhiên sai số huấn luyện ở đây là sai số trong mẫu, vốn luôn thấp với mô hình cây (mỗi lá của Random Forest chỉ cần 5 mẫu), nên cần kiểm chứng thêm bằng đường cong học tập và đường cong kiểm định ở giai đoạn tối ưu hóa.
+    \item Random Forest và XGBoost có MAE huấn luyện chỉ 0,24--0,34 kWh trong khi MAE kiểm định là 0,37--0,51 kWh (gấp 1,4--1,6 lần), và khoảng cách này xuất hiện ở mọi fold. Đây là dấu hiệu quá khớp. Tuy nhiên sai số huấn luyện ở đây là sai số trong mẫu, vốn luôn thấp với mô hình cây (mỗi lá của Random Forest chỉ cần 5 mẫu), nên cần kiểm chứng thêm bằng đường cong học tập và đường cong kiểm định (Mục~\ref{sec:limitations}).
     \item Linear Regression có sai số huấn luyện (0,41--0,55 kWh) xấp xỉ sai số kiểm định và cao hơn hẳn sai số huấn luyện của mô hình cây, tức mô hình chưa khớp: quan hệ tuyến tính không biểu diễn được tương tác giữa lịch và mức tiêu thụ gần đây. Sai số huấn luyện còn hơi lớn hơn sai số kiểm định vì phần huấn luyện chứa các mùa đông 2006--2008 tiêu thụ cao.
 \end{itemize}
 
@@ -175,4 +199,4 @@ Các đặc trưng tương quan với nhau chia sẻ tầm quan trọng; ví d�
 
 \paragraph{Vì sao lợi thế so với mô hình cơ sở gần như không đổi theo $h$.} Mức giảm MAE so với mô hình cơ sở tốt nhất là 17--20\% với Random Forest ở mọi $h$. Ở $h = 1$, mô hình cải thiện so với Naive nhờ biết giờ trong ngày; ở $h \ge 6$, mô hình cải thiện so với SNaive168 nhờ kết hợp nhiều chu kỳ thay vì sao chép một tuần duy nhất.
 
-\paragraph{Hạn chế ở giai đoạn này.} (i) Siêu tham số chưa được tối ưu và mô hình cây có dấu hiệu quá khớp chưa được kiểm chứng đầy đủ. (ii) Mô hình dự báo thấp có hệ thống các giờ đỉnh. (iii) Bộ đặc trưng chưa có thông tin ngày lễ và giá trị trễ của các nhóm công tơ phụ. (iv) Kết quả mới là kiểm định chéo trên tập huấn luyện; tập kiểm tra năm 2010 sẽ chỉ được dùng một lần cho mô hình cuối ở giai đoạn tối ưu hóa, để ước lượng sai số trên dữ liệu mới không bị ảnh hưởng bởi các lựa chọn của nhóm.
+\paragraph{Các vấn đề còn mở.} (i) Siêu tham số chưa được tối ưu và dấu hiệu quá khớp của mô hình cây chưa được kiểm chứng đầy đủ. (ii) Mô hình dự báo thấp có hệ thống các giờ đỉnh. (iii) Bộ đặc trưng chưa có thông tin ngày lễ và giá trị trễ của các nhóm công tơ phụ. (iv) Kết quả mới là kiểm định chéo trên tập huấn luyện. Các vấn đề này được phân tích và xử lý ở Chương~\ref{chap:improve}, nơi tập kiểm tra năm 2010 được dùng cho mô hình cuối sau khi mọi lựa chọn đã được chốt.
