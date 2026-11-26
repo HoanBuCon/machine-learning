@@ -18,7 +18,8 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 plt.rcParams["pdf.fonttype"] = 42          # nhúng font TrueType để giữ dấu tiếng Việt
 OUT = Path(__file__).resolve().parents[1] / "figures"
-NOTEBOOKS = ["01_eda.ipynb", "02_chuan_bi_du_lieu.ipynb", "03_huan_luyen_danh_gia.ipynb"]
+NOTEBOOKS = ["01_eda.ipynb", "02_chuan_bi_du_lieu.ipynb", "03_huan_luyen_danh_gia.ipynb",
+             "04_toi_uu_cai_tien.ipynb"]   # notebook 04 chạy khoảng 40 phút vì có tìm kiếm siêu tham số
 
 
 def run(notebook: str) -> None:

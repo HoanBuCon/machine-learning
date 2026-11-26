@@ -22,6 +22,22 @@ def time_series_folds(train: pd.DataFrame, n_splits=5, test_size=2160, gap=168):
     return list(TimeSeriesSplit(n_splits=n_splits, test_size=test_size, gap=gap).split(train))
 
 
+def common_sample_mask(df: pd.DataFrame) -> pd.Series:
+    """Tập mẫu đánh giá dùng chung: bỏ các giờ mà mô hình cơ sở thiếu giá trị quá khứ.
+
+    Mọi phép đánh giá (kiểm định chéo, tìm kiếm siêu tham số, tập kiểm tra) đều dùng hàm này,
+    nên mọi mô hình được chấm trên đúng cùng các giờ.
+    """
+    return df[BASELINE_INPUTS].notna().all(axis=1)
+
+
+def common_sample_folds(train: pd.DataFrame, folds):
+    """Các fold dùng cho GridSearchCV/RandomizedSearchCV: phần kiểm định chỉ giữ tập mẫu dùng chung
+    (giống run_cv), để điểm của tìm kiếm siêu tham số so sánh được với các bảng kết quả khác."""
+    ok = common_sample_mask(train).to_numpy()
+    return [(tr_idx, val_idx[ok[val_idx]]) for tr_idx, val_idx in folds]
+
+
 def run_cv(train: pd.DataFrame, feature_cols: list[str], folds, models=None):
     """Kiểm định chéo cho mọi mô hình cơ sở và mô hình học máy trên cùng các fold.
 
@@ -35,7 +51,7 @@ def run_cv(train: pd.DataFrame, feature_cols: list[str], folds, models=None):
     for k, (tr_idx, val_idx) in enumerate(folds, start=1):
         tr, val = train.iloc[tr_idx], train.iloc[val_idx]
         # Cùng tập mẫu kiểm định cho mọi mô hình: bỏ các giờ mà mô hình cơ sở thiếu giá trị quá khứ
-        val = val[val[BASELINE_INPUTS].notna().all(axis=1)]
+        val = val[common_sample_mask(val)]
         pred = pd.DataFrame({"target": val["target"], "target_time": val["target_time"], "fold": k},
                             index=val.index)
 
@@ -54,4 +70,42 @@ def run_cv(train: pd.DataFrame, feature_cols: list[str], folds, models=None):
                 fitted[name] = (model, val)
         oof.append(pred)
     return pd.DataFrame(rows), pd.concat(oof), fitted
+
+
+def learning_curve_ts(train: pd.DataFrame, feature_cols: list[str], folds, make, sizes):
+    """Đường cong học tập theo thời gian: ở mỗi fold, huấn luyện trên n mẫu GẦN NHẤT trước phần kiểm định
+    (giữ nguyên khoảng đệm), rồi đo MAE trong mẫu và MAE kiểm định trên tập mẫu dùng chung."""
+    rows = []
+    for k, (tr_idx, val_idx) in enumerate(common_sample_folds(train, folds), start=1):
+        val = train.iloc[val_idx]
+        for n in sizes:
+            if n > len(tr_idx):
+                continue
+            tr = train.iloc[tr_idx[-n:]]
+            model = make(feature_cols)
+            model.fit(tr[feature_cols], tr["target"])
+            rows.append({"fold": k, "n_train": n,
+                         "MAE_train": metrics(tr["target"], model.predict(tr[feature_cols]))["MAE"],
+                         "MAE_val": metrics(val["target"], model.predict(val[feature_cols]))["MAE"]})
+    return pd.DataFrame(rows)
+
+
+def evaluate_test(train: pd.DataFrame, test: pd.DataFrame, makers: dict):
+    """Đánh giá cuối: huấn luyện lại trên toàn bộ tập huấn luyện, dự báo tập kiểm tra một lần.
+
+    makers: {tên: (hàm tạo mô hình, danh sách đặc trưng)} để so sánh các mô hình dùng bộ đặc trưng khác nhau.
+    Dùng cùng quy tắc tập mẫu chung như kiểm định chéo (bỏ giờ mà mô hình cơ sở thiếu giá trị quá khứ).
+    Trả về bảng chỉ số và bảng dự báo.
+    """
+    test = test[common_sample_mask(test)]
+    pred = pd.DataFrame({"target": test["target"], "target_time": test["target_time"]}, index=test.index)
+    for name in BASELINES:
+        pred[name] = baseline_predict(name, train, test)
+    for name, (make, cols) in makers.items():
+        model = make(cols)
+        model.fit(train[cols], train["target"])
+        pred[name] = model.predict(test[cols])
+    rows = [{"model": m, **metrics(pred["target"], pred[m])} for m in pred.columns
+            if m not in ("target", "target_time")]
+    return pd.DataFrame(rows), pred
 

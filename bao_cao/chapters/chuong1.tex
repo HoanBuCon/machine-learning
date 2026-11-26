@@ -1,8 +1,6 @@
 \chapter{CƠ SỞ LÝ THUYẾT}
 \label{chap:theory}
 
-Chương này trình bày các khái niệm nền tảng của học máy, cách tiếp cận bài toán dự báo chuỗi thời gian bằng hồi quy có giám sát, các mô hình được sử dụng trong đề tài và phương pháp đánh giá mô hình.
-
 \section{Tổng quan về học máy}
 \label{sec:ml_overview}
 
@@ -53,7 +51,14 @@ Hồi quy tuyến tính (Linear Regression) giả định đầu ra là tổ h�
     \hat{\mathbf{w}} = \argmin_{\mathbf{w}} \sum_{i=1}^{N} \big(y_i - w_0 - \mathbf{w}^{\top}\mathbf{x}_i\big)^2 .
     \label{eq:ols}
 \end{equation}
-Mô hình huấn luyện nhanh, không có siêu tham số cần chọn và dễ diễn giải qua hệ số. Hạn chế là chỉ biểu diễn quan hệ tuyến tính, nên các biến lịch có quan hệ phi tuyến với đầu ra (giờ trong ngày) cần được mã hóa one-hot; khi các đặc trưng tương quan mạnh với nhau (đa cộng tuyến), hệ số kém ổn định. Hồi quy Ridge~\cite{hoerl1970ridge} khắc phục điểm sau bằng cách thêm điều chuẩn L2 $\lambda\lVert\mathbf{w}\rVert_2^2$ vào~\eqref{eq:ols}.
+Mô hình huấn luyện nhanh, không có siêu tham số cần chọn và dễ diễn giải qua hệ số. Hạn chế là chỉ biểu diễn quan hệ tuyến tính, nên các biến lịch có quan hệ phi tuyến với đầu ra (giờ trong ngày) cần được mã hóa one-hot; khi các đặc trưng tương quan mạnh với nhau (đa cộng tuyến), hệ số kém ổn định.
+
+Hồi quy Ridge~\cite{hoerl1970ridge} khắc phục điểm sau bằng cách thêm thành phần phạt L2 vào~\eqref{eq:ols}:
+\begin{equation}
+    \hat{\mathbf{w}}_{\text{Ridge}} = \argmin_{\mathbf{w}} \sum_{i=1}^{N} \big(y_i - w_0 - \mathbf{w}^{\top}\mathbf{x}_i\big)^2 + \alpha \lVert\mathbf{w}\rVert_2^2 .
+    \label{eq:ridge}
+\end{equation}
+Siêu tham số $\alpha \ge 0$ điều khiển mức co hệ số về 0: $\alpha = 0$ trở lại bình phương tối thiểu, $\alpha$ lớn làm hệ số nhỏ và ổn định hơn nhưng tăng độ chệch~\cite[mục 3.4]{hastie2009elements}. Vì thành phần phạt phụ thuộc thang đo, các đặc trưng cần được chuẩn hóa trước.
 
 \subsection{Cây quyết định hồi quy}
 Cây quyết định theo thuật toán CART~\cite{breiman1984classification} chia không gian đặc trưng một cách đệ quy: tại mỗi nút, chọn đặc trưng $x_j$ và ngưỡng $s$ để tách dữ liệu thành $\{x_j \le s\}$ và $\{x_j > s\}$ sao cho tổng bình phương sai số trong hai nhánh con nhỏ nhất. Giá trị dự báo tại một lá là trung bình nhãn của các mẫu thuộc lá. Cây học được quan hệ phi tuyến và tương tác giữa các đặc trưng, không cần chuẩn hóa dữ liệu, nhưng một cây sâu có phương sai lớn và dễ quá khớp.
@@ -79,6 +84,33 @@ XGBoost~\cite{chen2016xgboost} là một cài đặt hiệu quả của cây tă
 \end{equation}
 trong đó $T$ là số lá và $\mathbf{w}$ là giá trị các lá. XGBoost dùng xấp xỉ bậc hai của hàm mất mát khi tối ưu và xử lý trực tiếp giá trị thiếu khi tìm điểm tách~\cite{chen2016xgboost}. Các siêu tham số chính là số cây, tốc độ học, độ sâu cây và tỷ lệ lấy mẫu theo dòng và theo cột.
 
+\subsection{Tổ hợp mô hình}
+Tổ hợp mô hình (ensemble) kết hợp dự báo của nhiều mô hình thành một dự báo. Random Forest và Gradient Boosting đã là tổ hợp của nhiều cây; ở mức cao hơn, có thể tổ hợp các mô hình khác loại. Cách đơn giản nhất là lấy trung bình (Voting cho bài toán hồi quy):
+\begin{equation}
+    \hat{y}_{\text{Voting}} = \frac{1}{M}\sum_{m=1}^{M} \hat{y}^{(m)} .
+    \label{eq:voting}
+\end{equation}
+Nếu các mô hình thành phần có sai số gần nhau nhưng không hoàn toàn tương quan, sai số của trung bình thường nhỏ hơn sai số của từng mô hình. Wang và cộng sự~\cite{wang2023forecast} tổng kết hơn 50 năm nghiên cứu về kết hợp dự báo: kết hợp được dùng rộng rãi để tăng độ chính xác và giảm rủi ro khi phải chọn một mô hình ``tốt nhất'' duy nhất, với các cách kết hợp từ trung bình đơn giản đến trọng số thay đổi theo thời gian. Đổi lại, tổ hợp tốn thời gian huấn luyện gấp nhiều lần và khó diễn giải hơn một mô hình đơn.
+
+\section{Tối ưu hóa mô hình}
+\label{sec:opt_theory}
+
+\subsection{Tối ưu siêu tham số}
+Siêu tham số (số cây, độ sâu, tốc độ học, $\alpha$ của Ridge) không được học từ dữ liệu khi huấn luyện mà phải chọn trước. Tối ưu siêu tham số là tìm cấu hình $\boldsymbol{\lambda}$ trong không gian $\Lambda$ làm nhỏ sai số ước lượng bằng kiểm định chéo trên tập huấn luyện~\cite{bischl2023hyperparameter}:
+\begin{equation}
+    \boldsymbol{\lambda}^{*} = \argmin_{\boldsymbol{\lambda} \in \Lambda} \; \frac{1}{K}\sum_{k=1}^{K} \mathrm{MAE}\big(\hat{f}_{\boldsymbol{\lambda}}^{(-k)}, D_k\big),
+    \label{eq:hpo}
+\end{equation}
+trong đó $\hat{f}_{\boldsymbol{\lambda}}^{(-k)}$ là mô hình với cấu hình $\boldsymbol{\lambda}$ huấn luyện trên phần huấn luyện của fold $k$ và $D_k$ là phần kiểm định của fold đó. Tìm kiếm lưới (Grid Search) thử mọi tổ hợp của các giá trị cho trước; số tổ hợp tăng theo cấp số nhân với số siêu tham số. Tìm kiếm ngẫu nhiên (Random Search) lấy ngẫu nhiên một số cấu hình cố định từ không gian tìm kiếm. Bergstra và Bengio~\cite{bergstra2012random} chỉ ra rằng với cùng số lần thử, tìm kiếm ngẫu nhiên hiệu quả hơn tìm kiếm lưới, vì thường chỉ một vài siêu tham số thật sự ảnh hưởng đến kết quả và tìm kiếm ngẫu nhiên thử được nhiều giá trị khác nhau của chúng hơn. Bischl và cộng sự~\cite{bischl2023hyperparameter} tổng quan các phương pháp tối ưu siêu tham số (lưới, ngẫu nhiên, tối ưu Bayes và các phương pháp khác) cùng các khuyến nghị thực hành về đánh giá hiệu năng. Vì cấu hình được chọn theo chính điểm kiểm định chéo, điểm này lạc quan hơn sai số thật; do đó mô hình cuối cần được đánh giá trên một tập kiểm tra chưa tham gia vào bất kỳ lựa chọn nào~\cite{hastie2009elements}.
+
+\subsection{Đường cong học tập và đường cong kiểm định}
+Đường cong học tập (learning curve) biểu diễn sai số theo kích thước tập huấn luyện. Viering và Loog~\cite{viering2023shape} tổng quan các dạng đường cong học tập và cách dùng chúng để lựa chọn mô hình và dự đoán lợi ích của việc thêm dữ liệu. Cách đọc thông dụng: nếu sai số kiểm định còn giảm khi tăng dữ liệu, thêm dữ liệu còn có ích; nếu sai số huấn luyện và kiểm định cùng cao và gần nhau, mô hình chưa khớp; nếu khoảng cách giữa hai đường lớn và không thu hẹp, mô hình có phương sai lớn.
+
+Đường cong kiểm định (validation curve) biểu diễn sai số huấn luyện và sai số kiểm định theo một siêu tham số điều khiển độ phức tạp. Khi độ phức tạp tăng, sai số huấn luyện giảm đều; sai số kiểm định giảm rồi tăng trở lại khi mô hình bắt đầu quá khớp~\cite[mục 7.2]{hastie2009elements}. Giá trị cho sai số kiểm định nhỏ nhất là điểm cân bằng giữa độ chệch và phương sai. Đây là bằng chứng trực tiếp hơn so với khoảng cách giữa sai số trong mẫu và sai số kiểm định ở một cấu hình duy nhất.
+
+\subsection{Thiết kế đặc trưng bổ sung}
+Ngoài giá trị quá khứ của chính chuỗi cần dự báo, mô hình có thể dùng thêm thông tin khác có sẵn tại thời điểm dự báo: giá trị quá khứ của các chuỗi liên quan (ở đây là điện năng của từng nhóm công tơ phụ) và các biến biết trước như lịch ngày lễ. Điều kiện bắt buộc là mọi đặc trưng chỉ dùng dữ liệu đến thời điểm gốc $t$, hoặc là thông tin biết trước được về thời điểm mục tiêu; nếu không sẽ gây rò rỉ dữ liệu~\cite{kaufman2012leakage}. Tác động của mỗi nhóm đặc trưng mới được đo bằng thí nghiệm bỏ bớt (ablation): giữ nguyên mọi điều kiện khác và so sánh sai số kiểm định có và không có nhóm đặc trưng đó.
+
 \section{Đánh giá mô hình}
 \label{sec:eval_theory}
 
@@ -95,7 +127,7 @@ MAE và RMSE có cùng đơn vị với dữ liệu (kWh) nên dễ diễn giả
 \subsection{Kiểm định chéo theo thời gian và rò rỉ dữ liệu}
 Rò rỉ dữ liệu là khi thông tin không có sẵn tại thời điểm dự báo lọt vào quá trình huấn luyện, làm kết quả đánh giá lạc quan hơn thực tế~\cite{kaufman2012leakage}. Tài liệu scikit-learn nêu nguyên tắc không khớp (fit) các bước tiền xử lý trên dữ liệu kiểm tra: tham số của các bước tiền xử lý (giá trị điền khuyết, trung bình và độ lệch chuẩn khi chuẩn hóa) phải được học trên tập huấn luyện, và việc tổ chức các bước thành một Pipeline giúp bảo đảm điều đó~\cite{sklearn2026pitfalls}.
 
-Với chuỗi thời gian, chia ngẫu nhiên kiểu K-Fold có thể dẫn đến học từ tương lai để dự báo quá khứ. Phương pháp TimeSeriesSplit~\cite{sklearn2026tss} tạo các cặp huấn luyện -- kiểm định trong đó phần huấn luyện luôn đứng trước và mở rộng dần qua các fold; một khoảng đệm (gap) bỏ bớt một số mẫu giữa hai phần. Cách làm này tương ứng với đánh giá theo ``gốc dự báo trượt'' (rolling forecasting origin)~\cite[mục 5.10]{hyndman2021fpp3}. Bergmeir và cộng sự~\cite{bergmeir2012use,bergmeir2018note} phân tích tính hợp lệ của kiểm định chéo cho chuỗi thời gian; đề tài chọn phương án thận trọng là luôn giữ thứ tự thời gian.
+Với chuỗi thời gian, chia ngẫu nhiên kiểu K-Fold có thể dẫn đến học từ tương lai để dự báo quá khứ. Phương pháp TimeSeriesSplit~\cite{sklearn2026tss} tạo các cặp huấn luyện -- kiểm định trong đó phần huấn luyện luôn đứng trước và mở rộng dần qua các fold; một khoảng đệm (gap) bỏ bớt một số mẫu giữa hai phần. Cách làm này tương ứng với đánh giá theo ``gốc dự báo trượt'' (rolling forecasting origin)~\cite[mục 5.10]{hyndman2021fpp3}. Bergmeir và cộng sự~\cite{bergmeir2012use,bergmeir2018note} phân tích tính hợp lệ của kiểm định chéo cho chuỗi thời gian. Cerqueira và cộng sự~\cite{cerqueira2020evaluating} so sánh thực nghiệm các cách ước lượng sai số trên 62 chuỗi thực tế và thấy rằng với chuỗi không dừng, các phương pháp giữ thứ tự thời gian cho ước lượng chính xác nhất. Hewamalage và cộng sự~\cite{hewamalage2023forecast} tổng hợp các sai lầm thường gặp khi đánh giá mô hình dự báo, có thể làm một phương pháp kém trông như cạnh tranh được. Đề tài chọn phương án thận trọng là luôn giữ thứ tự thời gian.
 
 \subsection{Tầm quan trọng của đặc trưng}
-Tầm quan trọng hoán vị (permutation importance) đo mức tăng sai số khi hoán vị ngẫu nhiên giá trị của một đặc trưng trên dữ liệu đánh giá, qua đó phá vỡ quan hệ giữa đặc trưng đó và đầu ra~\cite{breiman2001random}. Cách đo này áp dụng được cho mọi mô hình. Khi các đặc trưng tương quan mạnh với nhau, chúng chia sẻ tầm quan trọng, nên giá trị của từng đặc trưng cần được đọc theo nhóm.
+Tầm quan trọng hoán vị (permutation importance) đo mức tăng sai số khi hoán vị ngẫu nhiên giá trị của một đặc trưng trên dữ liệu đánh giá, qua đó phá vỡ quan hệ giữa đặc trưng đó và đầu ra. Breiman đề xuất cách đo tầm quan trọng của biến theo hướng này cho Random Forest~\cite{breiman2001random}; vì chỉ cần dự báo của mô hình trên dữ liệu đã hoán vị, cách đo này dùng được cho mọi mô hình. Khi các đặc trưng tương quan mạnh với nhau, chúng chia sẻ tầm quan trọng, nên giá trị của từng đặc trưng cần được đọc theo nhóm.

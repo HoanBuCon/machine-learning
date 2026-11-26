@@ -1,29 +1,5 @@
 \appendix
 \addtocontents{toc}{\protect\renewcommand*{\protect\chaptername}{PHỤ LỤC}}
-\chapter{MÃ NGUỒN VÀ TÁI LẬP}
-\label{app:code}
-
-\section{Tổ chức mã nguồn}
-Mã nguồn được lưu tại kho \url{https://github.com/HoanBuCon/machine-learning} và tổ chức như sau:
-\begin{itemize}
-    \item \code{notebooks/01_eda.ipynb}: tải và đọc dữ liệu, khảo sát, chất lượng dữ liệu, tạo bảng điện năng theo giờ.
-    \item \code{notebooks/02_chuan_bi_du_lieu.ipynb}: bảng có giám sát, chia theo thời gian, kiểm định chéo, đường ống tiền xử lý.
-    \item \code{notebooks/03_huan_luyen_danh_gia.ipynb}: mô hình cơ sở, mô hình học máy, kiểm định chéo, phân tích lỗi.
-    \item \code{src/features.py}, \code{src/models.py}, \code{src/evaluation.py}: mã dùng chung cho đặc trưng, mô hình và đánh giá.
-    \item \code{ket_qua/}: bảng kết quả do notebook 03 ghi ra; \code{bao_cao/}: báo cáo này, kèm script xuất hình và sinh bảng.
-\end{itemize}
-
-\section{Hướng dẫn tái lập}
-Với Python 3.11, trong thư mục gốc của kho mã:
-\begin{lstlisting}[language=bash]
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-cd notebooks
-jupyter nbconvert --to notebook --execute --inplace 01_eda.ipynb 02_chuan_bi_du_lieu.ipynb 03_huan_luyen_danh_gia.ipynb
-\end{lstlisting}
-Notebook 01 tự tải dữ liệu từ UCI (khoảng 20 MB) nếu chưa có. Mọi mô hình dùng \code{random_state = 42}.
-
 \chapter{KHAI BÁO SỬ DỤNG CÔNG CỤ TRÍ TUỆ NHÂN TẠO}
 \label{app:ai}
 

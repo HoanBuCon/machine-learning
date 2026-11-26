@@ -9,6 +9,7 @@ Các dòng có NaN được giữ lại để lưới giờ liên tục; việc 
 """
 from pathlib import Path
 
+import holidays
 import pandas as pd
 
 # lag_k = y(t - k). Chọn theo hàm tự tương quan trên tập huấn luyện (notebook 01, mục 8.2):
@@ -25,10 +26,7 @@ LINEAR_EXCLUDE = ["is_weekend"]
 
 def load_hourly(path="../data/processed/hourly.parquet") -> pd.Series:
     """Đọc chuỗi điện năng theo giờ (kWh) do notebook 01 tạo ra."""
-    path = Path(path)
-    if not path.exists():
-        raise FileNotFoundError(f"Không tìm thấy {path}. Hãy chạy notebook 01_eda.ipynb trước.")
-    return pd.read_parquet(path)["energy_kwh"]
+    return load_hourly_frame(path)["energy_kwh"]
 
 
 def make_supervised(y: pd.Series, h: int) -> pd.DataFrame:
@@ -57,6 +55,63 @@ def make_supervised(y: pd.Series, h: int) -> pd.DataFrame:
     df["target_time"] = target_time
     df["target"] = y.shift(-h)
     df.index.name = "origin"
+    return df
+
+
+# ------------------------------------------------------------------ cải tiến đặc trưng (Tuần 8)
+SUBMETERS = ["sub1_kwh", "sub2_kwh", "sub3_kwh"]   # bếp, giặt là, bình nước nóng + điều hòa
+SUB_LAGS = [0, 1]
+# Không dùng other_kwh: other = energy - sub1 - sub2 - sub3 nên lag_0 đã chứa đủ thông tin,
+# thêm vào sẽ làm các cột phụ thuộc tuyến tính hoàn toàn với lag_0.
+
+
+def load_hourly_frame(path="../data/processed/hourly.parquet") -> pd.DataFrame:
+    """Đọc toàn bộ bảng theo giờ (điện năng tổng và ba nhóm công tơ phụ)."""
+    path = Path(path)
+    if not path.exists():
+        raise FileNotFoundError(f"Không tìm thấy {path}. Hãy chạy notebook 01_eda.ipynb trước.")
+    return pd.read_parquet(path)
+
+
+def add_submeter_lags(df: pd.DataFrame, hourly: pd.DataFrame) -> pd.DataFrame:
+    """Thêm điện năng của từng nhóm công tơ phụ tại t và t-1 (chỉ dùng thông tin đến thời điểm gốc t)."""
+    out = df.copy()
+    for col in SUBMETERS:
+        s = hourly[col].reindex(df.index)
+        for k in SUB_LAGS:
+            out[f"{col.removesuffix('_kwh')}_lag_{k}"] = s.shift(k)
+    return _move_to_end(out)
+
+
+def add_holiday_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Cờ ngày lễ Pháp của thời điểm mục tiêu và cờ ngày liền kề ngày lễ (trước hoặc sau một ngày).
+
+    Lịch ngày lễ biết trước nên dùng cho thời điểm mục tiêu t + h không gây rò rỉ.
+    """
+    target_time = pd.DatetimeIndex(df["target_time"])
+    years = range(target_time.year.min() - 1, target_time.year.max() + 2)
+    french_holidays = pd.DatetimeIndex(sorted(holidays.France(years=years)))
+    day = target_time.normalize()
+    out = df.copy()
+    out["is_holiday"] = day.isin(french_holidays).astype(int)
+    adjacent = (day.isin(french_holidays + pd.Timedelta(days=1))
+                | day.isin(french_holidays - pd.Timedelta(days=1)))
+    out["near_holiday"] = (adjacent & (out["is_holiday"] == 0)).astype(int)
+    return _move_to_end(out)
+
+
+def _move_to_end(df: pd.DataFrame) -> pd.DataFrame:
+    """Giữ target_time và target là hai cột cuối để dễ đọc."""
+    return df[[c for c in df.columns if c not in ("target_time", "target")] + ["target_time", "target"]]
+
+
+def make_features(hourly: pd.DataFrame, h: int, submeter=False, holiday=False) -> pd.DataFrame:
+    """Bảng có giám sát của Tuần 6, có thể thêm đặc trưng công tơ phụ và/hoặc ngày lễ."""
+    df = make_supervised(hourly["energy_kwh"], h)
+    if submeter:
+        df = add_submeter_lags(df, hourly)
+    if holiday:
+        df = add_holiday_features(df)
     return df
 
 

@@ -1,0 +1,22 @@
+\begin{table}[htbp]
+\centering
+\caption[Kết quả trên tập kiểm tra]{MAE (kWh) trên tập kiểm tra năm 2010 (7.227 giờ cho mỗi tầm dự báo). Mô hình được huấn luyện lại trên toàn bộ tập huấn luyện với cấu hình đã chốt.}
+\label{tab:test}
+\small
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Mô hình} & \textbf{$h = 1$} & \textbf{$h = 6$} & \textbf{$h = 12$} & \textbf{$h = 24$} \\
+\hline
+Mean & 0{,}650 & 0{,}650 & 0{,}650 & 0{,}650 \\ \hline
+Naive & 0{,}408 & 0{,}854 & 0{,}715 & 0{,}556 \\ \hline
+SNaive24 & 0{,}556 & 0{,}556 & 0{,}556 & 0{,}556 \\ \hline
+SNaive168 & 0{,}577 & 0{,}577 & 0{,}577 & 0{,}577 \\ \hline
+Linear Regression (A0) & 0{,}361 & 0{,}470 & 0{,}469 & 0{,}465 \\ \hline
+Random Forest (A0) & 0{,}336 & 0{,}438 & 0{,}444 & 0{,}448 \\ \hline
+XGBoost (A0) & 0{,}334 & 0{,}440 & 0{,}449 & 0{,}445 \\ \hline
+Ridge (A2) & 0{,}359 & 0{,}468 & 0{,}466 & 0{,}463 \\ \hline
+Random Forest (A2) & 0{,}322 & 0{,}438 & 0{,}443 & 0{,}446 \\ \hline
+XGBoost (A2, mô hình cuối) & 0{,}313 & 0{,}434 & 0{,}439 & 0{,}441 \\ \hline
+Voting (A3) & 0{,}314 & 0{,}435 & 0{,}439 & 0{,}442 \\ \hline
+\end{tabular}
+\end{table}

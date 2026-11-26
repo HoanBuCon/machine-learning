@@ -8,9 +8,9 @@
 """
 import pandas as pd
 from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor, VotingRegressor
 from sklearn.impute import SimpleImputer
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from xgboost import XGBRegressor
@@ -76,3 +76,19 @@ MODELS = {
     "RandomForest": make_random_forest,
     "XGBoost": make_xgboost,
 }
+
+
+# ------------------------------------------------------------------ mô hình bổ sung ở Tuần 8
+def make_ridge(feature_cols: list[str], alpha=1.0) -> Pipeline:
+    """Ridge: cùng tiền xử lý với hồi quy tuyến tính, thêm phạt L2 lên hệ số (alpha)."""
+    pipe = make_linear(feature_cols)
+    pipe.set_params(model=Ridge(alpha=alpha))
+    return pipe
+
+
+def make_voting(feature_cols: list[str], rf_params=None, xgb_params=None) -> VotingRegressor:
+    """Tổ hợp lấy trung bình dự báo của Random Forest và XGBoost (mỗi mô hình giữ Pipeline riêng)."""
+    return VotingRegressor([
+        ("rf", make_random_forest(feature_cols, **(rf_params or {}))),
+        ("xgb", make_xgboost(feature_cols, **(xgb_params or {}))),
+    ])

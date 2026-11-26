@@ -1,0 +1,15 @@
+\begin{table}[htbp]
+\centering
+\caption[Kiểm định chéo và tập kiểm tra của mô hình cuối]{Mô hình cuối (XGBoost đã tối ưu): MAE kiểm định chéo so với kết quả trên tập kiểm tra, và mức giảm MAE so với mô hình cơ sở được chọn trên kiểm định chéo (MAE của mô hình cơ sở đó trên tập kiểm tra trong ngoặc).}
+\label{tab:cv_test}
+\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+\textbf{$h$} & \textbf{MAE KĐC} & \textbf{MAE KT} & \textbf{RMSE KT} & \textbf{MAPE KT (\%)} & \textbf{Cơ sở (MAE KT)} & \textbf{Giảm (\%)} \\
+\hline
+1 & 0{,}334 & 0{,}313 & 0{,}459 & 38{,}2 & Naive (0{,}408) & 23{,}3 \\ \hline
+6 & 0{,}474 & 0{,}434 & 0{,}600 & 58{,}7 & SNaive168 (0{,}577) & 24{,}7 \\ \hline
+12 & 0{,}480 & 0{,}439 & 0{,}604 & 60{,}2 & SNaive168 (0{,}577) & 23{,}9 \\ \hline
+24 & 0{,}492 & 0{,}441 & 0{,}603 & 61{,}3 & SNaive168 (0{,}577) & 23{,}5 \\ \hline
+\end{tabular}
+\end{table}
